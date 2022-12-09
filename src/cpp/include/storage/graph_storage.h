@@ -58,6 +58,8 @@ class GraphModelStorage {
     // In memory subgraph for partition buffer
 
     EdgeList active_edges_;
+    EdgeList next_active_edges_;
+    vector<torch::Tensor>::iterator edge_buckets_per_buffer_iterator_;
     Indices active_nodes_;
 
     std::mutex *subgraph_lock_;
@@ -216,7 +218,13 @@ class GraphModelStorage {
         }
     }
 
+    void setEdgeBucketPerBufferIterator(vector<torch::Tensor>::iterator edge_buckets_per_buffer_iterator) {
+        edge_buckets_per_buffer_iterator_ = edge_buckets_per_buffer_iterator;
+    }
+
     void setActiveEdges(torch::Tensor active_edges) { active_edges_ = active_edges; }
+
+    void setActiveEdgesAsync(torch::Tensor active_edges);
 
     void setActiveNodes(torch::Tensor node_ids) { active_nodes_ = node_ids; }
 
