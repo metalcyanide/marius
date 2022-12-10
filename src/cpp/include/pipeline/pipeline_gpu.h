@@ -22,6 +22,8 @@ class ComputeWorkerGPU : public Worker {
     ComputeWorkerGPU(Pipeline *pipeline, int gpu_id) : Worker{pipeline}, gpu_id_{gpu_id} {}
 
     void run() override;
+
+    void launchKernel();
 };
 
 class EncodeNodesWorkerGPU : public Worker {

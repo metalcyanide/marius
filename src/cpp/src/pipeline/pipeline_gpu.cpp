@@ -64,7 +64,7 @@ void ComputeWorkerGPU::run() {
 
                 batch->dense_graph_.performMap();
 
-                pipeline_->model_->device_models_[gpu_id_].get()->train_batch(batch, ((PipelineGPU *)pipeline_)->pipeline_options_->gpu_model_average);
+                launchKernel();
 
                 if (will_sync) {
                     // we already have the lock acquired, it is safe to sync?
