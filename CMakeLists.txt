@@ -3,7 +3,7 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 cmake_policy(SET CMP0048 NEW)
 
-project(marius VERSION 0.1 LANGUAGES CXX)
+project(marius VERSION 0.1 LANGUAGES CUDA CXX)
 
 include(FindPackageHandleStandardArgs)
 
@@ -229,7 +229,7 @@ file(GLOB_RECURSE MANAGER_BINDINGS ${project_BINDINGS} ${project_BINDINGS_DIR}/m
 pybind11_add_module(_manager ${MANAGER_BINDINGS})
 target_link_libraries(_manager PRIVATE ${PROJECT_NAME} ${TORCH_PYTHON_LIBRARY})
 
-file(GLOB_RECURSE PIPELINE_BINDINGS ${project_BINDINGS} ${project_BINDINGS_DIR}/pipeline/*.cpp)
+file(GLOB_RECURSE PIPELINE_BINDINGS ${project_BINDINGS} ${project_BINDINGS_DIR}/pipeline/*.cpp ${project_BINDINGS_DIR}/pipeline/*.cu)
 pybind11_add_module(_pipeline ${PIPELINE_BINDINGS})
 target_link_libraries(_pipeline PRIVATE ${PROJECT_NAME} ${TORCH_PYTHON_LIBRARY})
 

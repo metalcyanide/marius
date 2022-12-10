@@ -3,7 +3,7 @@
 //
 
 #include "pipeline/pipeline_gpu.h"
-
+#include "pipeline/gpu_kernel.h"
 #include "pipeline/queue.h"
 #include "reporting/logger.h"
 
@@ -64,7 +64,7 @@ void ComputeWorkerGPU::run() {
 
                 batch->dense_graph_.performMap();
 
-                launchKernel();
+                launchKernel(pipeline_, gpu_id_, batch);
 
                 if (will_sync) {
                     // we already have the lock acquired, it is safe to sync?
