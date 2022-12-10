@@ -79,7 +79,7 @@ void Batch::to(torch::Device device) {
     }
 
     if (dense_graph_.node_ids_.defined()) {
-        dense_graph_.to(device, true);
+        dense_graph_.to(device);
     }
 
     if (device.is_cuda()) {
