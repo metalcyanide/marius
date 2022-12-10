@@ -73,7 +73,7 @@ if (EXISTS ${project_INCLUDE_DIR})
     file(GLOB_RECURSE project_HEADERS ${project_HEADERS} ${project_INCLUDE_DIR}/*.h)
 endif ()
 if (EXISTS ${project_SOURCE_DIR})
-    file(GLOB_RECURSE project_SOURCES ${project_SOURCES} ${project_SOURCE_DIR}/*.cpp)
+    file(GLOB_RECURSE project_SOURCES ${project_SOURCES} ${project_SOURCE_DIR}/*.cpp ${project_SOURCE_DIR}/*.cu)
 endif ()
 
 if(${USE_CUDA})

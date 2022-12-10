@@ -22,7 +22,7 @@ void BatchToDeviceWorker::run() {
             }
             int queue_choice = pipeline_->assign_id_++ % ((PipelineGPU *)pipeline_)->device_loaded_batches_.size();
 
-            batch->to(pipeline_->model_->device_models_[queue_choice]->device_);
+            transferDataToDevice(pipeline_, &batch, queue_choice);
 
             ((PipelineGPU *)pipeline_)->device_loaded_batches_[queue_choice]->blocking_push(batch);
         }
@@ -64,7 +64,7 @@ void ComputeWorkerGPU::run() {
 
                 batch->dense_graph_.performMap();
 
-                launchKernel(pipeline_, gpu_id_, batch);
+                ((PipelineGPU *)pipeline_)->model_->device_models_[gpu_id_].get()->train_batch(batch, ((PipelineGPU *)pipeline_)->pipeline_options_->gpu_model_average);
 
                 if (will_sync) {
                     // we already have the lock acquired, it is safe to sync?
