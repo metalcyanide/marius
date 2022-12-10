@@ -27,59 +27,59 @@ void Batch::to(torch::Device device) {
     }
 
     if (edges_.defined()) {
-        edges_ = edges_.to(device);
+        edges_ = edges_.to(device, true);
     }
 
     if (neg_edges_.defined()) {
-        neg_edges_ = neg_edges_.to(device);
+        neg_edges_ = neg_edges_.to(device, true);
     }
 
     if (root_node_indices_.defined()) {
-        root_node_indices_ = root_node_indices_.to(device);
+        root_node_indices_ = root_node_indices_.to(device, true);
     }
 
     if (unique_node_indices_.defined()) {
-        unique_node_indices_ = unique_node_indices_.to(device);
+        unique_node_indices_ = unique_node_indices_.to(device, true);
     }
 
     if (node_labels_.defined()) {
-        node_labels_ = node_labels_.to(device);
+        node_labels_ = node_labels_.to(device, true);
     }
 
     if (src_neg_indices_mapping_.defined()) {
-        src_neg_indices_mapping_ = src_neg_indices_mapping_.to(device);
+        src_neg_indices_mapping_ = src_neg_indices_mapping_.to(device, true);
     }
 
     if (dst_neg_indices_mapping_.defined()) {
-        dst_neg_indices_mapping_ = dst_neg_indices_mapping_.to(device);
+        dst_neg_indices_mapping_ = dst_neg_indices_mapping_.to(device, true);
     }
 
     if (src_neg_filter_.defined()) {
-        src_neg_filter_ = src_neg_filter_.to(device);
+        src_neg_filter_ = src_neg_filter_.to(device, true);
     }
 
     if (dst_neg_filter_.defined()) {
-        dst_neg_filter_ = dst_neg_filter_.to(device);
+        dst_neg_filter_ = dst_neg_filter_.to(device, true);
     }
 
     if (node_embeddings_.defined()) {
-        node_embeddings_ = node_embeddings_.to(device);
+        node_embeddings_ = node_embeddings_.to(device, true);
     }
 
     if (node_embeddings_state_.defined()) {
-        node_embeddings_state_ = node_embeddings_state_.to(device);
+        node_embeddings_state_ = node_embeddings_state_.to(device, true);
     }
 
     if (node_features_.defined()) {
-        node_features_ = node_features_.to(device);
+        node_features_ = node_features_.to(device, true);
     }
 
     if (encoded_uniques_.defined()) {
-        encoded_uniques_ = encoded_uniques_.to(device);
+        encoded_uniques_ = encoded_uniques_.to(device, true);
     }
 
     if (dense_graph_.node_ids_.defined()) {
-        dense_graph_.to(device);
+        dense_graph_.to(device, true);
     }
 
     if (device.is_cuda()) {
