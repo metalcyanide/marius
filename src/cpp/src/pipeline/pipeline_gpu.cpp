@@ -3,7 +3,7 @@
 //
 
 #include "pipeline/pipeline_gpu.h"
-#include "pipeline/gpu_kernel.h"
+
 #include "pipeline/queue.h"
 #include "reporting/logger.h"
 
@@ -22,7 +22,7 @@ void BatchToDeviceWorker::run() {
             }
             int queue_choice = pipeline_->assign_id_++ % ((PipelineGPU *)pipeline_)->device_loaded_batches_.size();
 
-            transferDataToDevice(pipeline_, &batch, queue_choice);
+            batch->to(pipeline_->model_->device_models_[queue_choice]->device_);
 
             ((PipelineGPU *)pipeline_)->device_loaded_batches_[queue_choice]->blocking_push(batch);
         }
