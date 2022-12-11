@@ -96,6 +96,11 @@ void SynchronousTrainer::train(int num_epochs) {
         dataloader_->setTrainSet();
     }
 
+    // Define cuda streams for different GPU ops.
+    at::cuda::CUDAStream batchToDeviceCUDAStream = at::cuda::getStreamFromPool();
+    at::cuda::CUDAStream computeCUDAStream = at::cuda::getStreamFromPool();
+    at::cuda::CUDAStream deviceToBatchCUDAStream = at::cuda::getStreamFromPool();
+
     dataloader_->initializeBatches(false);
 
     Timer timer = Timer(false);
@@ -108,8 +113,13 @@ void SynchronousTrainer::train(int num_epochs) {
             shared_ptr<Batch> batch = dataloader_->getBatch();
 
             if (dataloader_->graph_storage_->embeddingsOffDevice()) {
-                // transfers batch to the GPU
-                batch->to(model_->device_);
+                {
+                    // set current stream to data stream (host to device).
+                    at::cuda::CUDAStreamGuard guard(batchToDeviceCUDAStream);
+
+                    // transfers batch to the GPU
+                    batch->to(model_->device_);
+                }
             } else {
                 dataloader_->loadGPUParameters(batch);
             }
@@ -120,13 +130,23 @@ void SynchronousTrainer::train(int num_epochs) {
 
             batch->dense_graph_.performMap();
 
-            // compute forward and backward pass of the model
-            model_->train_batch(batch);
+            {
+                // set current stream to compute stream.
+                at::cuda::CUDAStreamGuard guard(computeCUDAStream);
+
+                // compute forward and backward pass of the model.
+                model_->train_batch(batch);
+            }
 
             // transfer gradients and update parameters
             if (batch->node_embeddings_.defined()) {
                 if (dataloader_->graph_storage_->embeddingsOffDevice()) {
-                    batch->embeddingsToHost();
+                    {
+                        // set current stream to data stream (device to host).
+                        at::cuda::CUDAStreamGuard guard(deviceToBatchCUDAStream);
+
+                        batch->embeddingsToHost();
+                    }
                 } else {
                     dataloader_->updateEmbeddings(batch, true);
                 }
