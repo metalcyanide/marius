@@ -103,6 +103,10 @@ std::tuple<shared_ptr<Model>, shared_ptr<GraphModelStorage>, shared_ptr<DataLoad
 }
 
 void marius_train(shared_ptr<MariusConfig> marius_config) {
+    Timer train_timer = Timer(false);
+    train_timer.start();
+    SPDLOG_INFO("Start training");
+
     auto tup = marius_init(marius_config, true);
     auto model = std::get<0>(tup);
     auto graph_model_storage = std::get<1>(tup);
@@ -160,6 +164,11 @@ void marius_train(shared_ptr<MariusConfig> marius_config) {
             encode_and_export(dataloader, model, marius_config);
         }
     }
+
+    train_timer.stop();
+    int64_t train_time = train_timer.getDuration();
+
+    SPDLOG_INFO("Training Complete: {}s", (double)train_time / 1000);
 }
 
 void marius_eval(shared_ptr<MariusConfig> marius_config) {

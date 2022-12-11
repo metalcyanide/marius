@@ -7,6 +7,10 @@
 #include "pipeline/queue.h"
 #include "reporting/logger.h"
 
+at::cuda::CUDAStream BatchToDeviceWorker::batchToDeviceCUDAStream = at::cuda::getStreamFromPool();
+at::cuda::CUDAStream ComputeWorkerGPU::computeCUDAStream = at::cuda::getStreamFromPool();
+at::cuda::CUDAStream BatchToHostWorker::deviceToBatchCUDAStream = at::cuda::getStreamFromPool();
+
 void BatchToDeviceWorker::run() {
     unsigned int rand_seed = rand();
 
@@ -22,7 +26,11 @@ void BatchToDeviceWorker::run() {
             }
             int queue_choice = pipeline_->assign_id_++ % ((PipelineGPU *)pipeline_)->device_loaded_batches_.size();
 
-            batch->to(pipeline_->model_->device_models_[queue_choice]->device_);
+            {
+               // set current stream to data stream (host to device).
+               at::cuda::CUDAStreamGuard guard(BatchToDeviceWorker::batchToDeviceCUDAStream);
+               batch->to(pipeline_->model_->device_models_[queue_choice]->device_);
+            }
 
             ((PipelineGPU *)pipeline_)->device_loaded_batches_[queue_choice]->blocking_push(batch);
         }
@@ -64,7 +72,11 @@ void ComputeWorkerGPU::run() {
 
                 batch->dense_graph_.performMap();
 
-                pipeline_->model_->device_models_[gpu_id_].get()->train_batch(batch, ((PipelineGPU *)pipeline_)->pipeline_options_->gpu_model_average);
+                {
+                    // set current stream to compute stream.
+                    at::cuda::CUDAStreamGuard guard(ComputeWorkerGPU::computeCUDAStream);
+                    pipeline_->model_->device_models_[gpu_id_].get()->train_batch(batch, ((PipelineGPU *)pipeline_)->pipeline_options_->gpu_model_average);
+                }
 
                 if (will_sync) {
                     // we already have the lock acquired, it is safe to sync?
@@ -132,7 +144,11 @@ void BatchToHostWorker::run() {
                 break;
             }
 
-            batch->embeddingsToHost();
+            {
+                // set current stream to data stream (device to host).
+                at::cuda::CUDAStreamGuard guard(BatchToHostWorker::deviceToBatchCUDAStream);
+                batch->embeddingsToHost();
+            }
 
             ((PipelineGPU *)pipeline_)->update_batches_->blocking_push(batch);
         }
