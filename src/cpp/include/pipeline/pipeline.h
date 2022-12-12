@@ -12,6 +12,8 @@
 #include "nn/model.h"
 #include "pipeline_constants.h"
 #include "queue.h"
+#include "c10/cuda/CUDAStream.h"
+#include "c10/cuda/CUDAGuard.h"
 
 class Pipeline;
 
