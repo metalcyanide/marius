@@ -9,7 +9,7 @@ torch::Tensor pad_and_reshape(torch::Tensor input, int num_chunks) {
     int num_per_chunk = (int)ceil((float)num_pos / num_chunks);
 
     if (num_per_chunk != num_pos / num_chunks) {
-        int64_t new_size = num_per_chunk * num_chunks;
+        int32_t new_size = num_per_chunk * num_chunks;
         torch::nn::functional::PadFuncOptions options({0, 0, 0, new_size - num_pos});
         input = torch::nn::functional::pad(input, options);
     }

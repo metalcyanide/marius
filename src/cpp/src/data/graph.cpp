@@ -13,7 +13,7 @@
 
 MariusGraph::MariusGraph(){};
 
-MariusGraph::MariusGraph(EdgeList src_sorted_edges, EdgeList dst_sorted_edges, int64_t num_nodes_in_memory) {
+MariusGraph::MariusGraph(EdgeList src_sorted_edges, EdgeList dst_sorted_edges, int32_t num_nodes_in_memory) {
     num_nodes_in_memory_ = num_nodes_in_memory;
 
     src_sorted_edges_ = src_sorted_edges;
@@ -38,7 +38,7 @@ MariusGraph::MariusGraph(EdgeList src_sorted_edges, EdgeList dst_sorted_edges, i
 MariusGraph::MariusGraph(EdgeList edges) {
     EdgeList src_sorted_edges = edges.index_select(0, edges.select(1, 0).argsort());
     EdgeList dst_sorted_edges = edges.index_select(0, edges.select(1, -1).argsort());
-    int64_t num_nodes_in_memory = std::get<0>(torch::_unique(torch::cat({edges.select(1, 0), edges.select(1, -1)}))).size(0);
+    int32_t num_nodes_in_memory = std::get<0>(torch::_unique(torch::cat({edges.select(1, 0), edges.select(1, -1)}))).size(0);
 
     MariusGraph(src_sorted_edges, dst_sorted_edges, num_nodes_in_memory);
 }
@@ -133,15 +133,15 @@ std::tuple<torch::Tensor, torch::Tensor> MariusGraph::getNeighborsForNodeIds(tor
             num_neighbors = in_num_neighbors_.index_select(0, node_ids);
             global_offsets = in_offsets_.index_select(0, node_ids);
         } else {
-            auto in_num_neighbors_accessor = in_num_neighbors_.accessor<int64_t, 1>();
-            auto in_offsets_accessor = in_offsets_.accessor<int64_t, 1>();
+            auto in_num_neighbors_accessor = in_num_neighbors_.accessor<int32_t, 1>();
+            auto in_offsets_accessor = in_offsets_.accessor<int32_t, 1>();
 
-            auto num_neighbors_accessor = num_neighbors.accessor<int64_t, 1>();
-            auto global_offsets_accessor = global_offsets.accessor<int64_t, 1>();
-            auto node_ids_accessor = node_ids.accessor<int64_t, 1>();
+            auto num_neighbors_accessor = num_neighbors.accessor<int32_t, 1>();
+            auto global_offsets_accessor = global_offsets.accessor<int32_t, 1>();
+            auto node_ids_accessor = node_ids.accessor<int32_t, 1>();
 
 #pragma omp parallel for
-            for (int64_t i = 0; i < node_ids.size(0); i++) {
+            for (int32_t i = 0; i < node_ids.size(0); i++) {
                 num_neighbors_accessor[i] = in_num_neighbors_accessor[node_ids_accessor[i]];
                 global_offsets_accessor[i] = in_offsets_accessor[node_ids_accessor[i]];
             }
@@ -151,15 +151,15 @@ std::tuple<torch::Tensor, torch::Tensor> MariusGraph::getNeighborsForNodeIds(tor
             num_neighbors = out_num_neighbors_.index_select(0, node_ids);
             global_offsets = out_offsets_.index_select(0, node_ids);
         } else {
-            auto out_num_neighbors_accessor = out_num_neighbors_.accessor<int64_t, 1>();
-            auto out_offsets_accessor = out_offsets_.accessor<int64_t, 1>();
+            auto out_num_neighbors_accessor = out_num_neighbors_.accessor<int32_t, 1>();
+            auto out_offsets_accessor = out_offsets_.accessor<int32_t, 1>();
 
-            auto num_neighbors_accessor = num_neighbors.accessor<int64_t, 1>();
-            auto global_offsets_accessor = global_offsets.accessor<int64_t, 1>();
-            auto node_ids_accessor = node_ids.accessor<int64_t, 1>();
+            auto num_neighbors_accessor = num_neighbors.accessor<int32_t, 1>();
+            auto global_offsets_accessor = global_offsets.accessor<int32_t, 1>();
+            auto node_ids_accessor = node_ids.accessor<int32_t, 1>();
 
 #pragma omp parallel for
-            for (int64_t i = 0; i < node_ids.size(0); i++) {
+            for (int32_t i = 0; i < node_ids.size(0); i++) {
                 num_neighbors_accessor[i] = out_num_neighbors_accessor[node_ids_accessor[i]];
                 global_offsets_accessor[i] = out_offsets_accessor[node_ids_accessor[i]];
             }
@@ -168,12 +168,12 @@ std::tuple<torch::Tensor, torch::Tensor> MariusGraph::getNeighborsForNodeIds(tor
 
     torch::Tensor summed_num_neighbors = num_neighbors.cumsum(0);
     Indices local_offsets = summed_num_neighbors - num_neighbors;
-    int64_t total_neighbors = summed_num_neighbors[-1].item<int64_t>();
+    int32_t total_neighbors = summed_num_neighbors[-1].item<int32_t>();
 
     std::tuple<torch::Tensor, torch::Tensor> ret;
 
     torch::Tensor edges;
-    int64_t max_id;
+    int32_t max_id;
 
     if (incoming) {
         edges = dst_sorted_edges_;
@@ -273,17 +273,17 @@ void DENSEGraph::to(torch::Device device) {
     }
 }
 
-int64_t DENSEGraph::getLayerOffset() { return hop_offsets_[1].item<int64_t>(); }
+int32_t DENSEGraph::getLayerOffset() { return hop_offsets_[1].item<int32_t>(); }
 
 void DENSEGraph::prepareForNextLayer() {
-    int64_t num_nodes_to_remove = (hop_offsets_[1] - hop_offsets_[0]).item<int64_t>();
-    int64_t num_finished_nodes = (hop_offsets_[2] - hop_offsets_[1]).item<int64_t>();
+    int32_t num_nodes_to_remove = (hop_offsets_[1] - hop_offsets_[0]).item<int32_t>();
+    int32_t num_finished_nodes = (hop_offsets_[2] - hop_offsets_[1]).item<int32_t>();
 
     if (src_sorted_edges_.size(0) > 0) {
         if (num_finished_nodes == out_offsets_.size(0)) {
             return;
         }
-        int64_t finished_out_neighbors = out_offsets_[num_finished_nodes].item<int64_t>();
+        int32_t finished_out_neighbors = out_offsets_[num_finished_nodes].item<int32_t>();
         src_sorted_edges_ = src_sorted_edges_.narrow(0, finished_out_neighbors, src_sorted_edges_.size(0) - finished_out_neighbors);
         out_neighbors_mapping_ =
             out_neighbors_mapping_.narrow(0, finished_out_neighbors, out_neighbors_mapping_.size(0) - finished_out_neighbors) - num_nodes_to_remove;
@@ -295,7 +295,7 @@ void DENSEGraph::prepareForNextLayer() {
         if (num_finished_nodes == in_offsets_.size(0)) {
             return;
         }
-        int64_t finished_in_neighbors = in_offsets_[num_finished_nodes].item<int64_t>();
+        int32_t finished_in_neighbors = in_offsets_[num_finished_nodes].item<int32_t>();
         dst_sorted_edges_ = dst_sorted_edges_.narrow(0, finished_in_neighbors, dst_sorted_edges_.size(0) - finished_in_neighbors);
         in_neighbors_mapping_ =
             in_neighbors_mapping_.narrow(0, finished_in_neighbors, in_neighbors_mapping_.size(0) - finished_in_neighbors) - num_nodes_to_remove;

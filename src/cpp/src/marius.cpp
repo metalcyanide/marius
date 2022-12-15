@@ -24,11 +24,11 @@ void encode_and_export(shared_ptr<DataLoader> dataloader, shared_ptr<Model> mode
         remove(filename.c_str());
     }
 
-    int64_t num_nodes = marius_config->storage->dataset->num_nodes;
+    int32_t num_nodes = marius_config->storage->dataset->num_nodes;
 
     int last_stage = marius_config->model->encoder->layers.size() - 1;
     int last_layer = marius_config->model->encoder->layers[last_stage].size() - 1;
-    int64_t dim = marius_config->model->encoder->layers[last_stage][last_layer]->output_dim;
+    int32_t dim = marius_config->model->encoder->layers[last_stage][last_layer]->output_dim;
 
     dataloader->graph_storage_->storage_ptrs_.encoded_nodes = std::make_shared<FlatFile>(filename, num_nodes, dim, torch::kFloat32, true);
 
@@ -95,7 +95,7 @@ std::tuple<shared_ptr<Model>, shared_ptr<GraphModelStorage>, shared_ptr<DataLoad
     dataloader->epochs_processed_ = epochs_processed;
 
     initialization_timer.stop();
-    int64_t initialization_time = initialization_timer.getDuration();
+    int32_t initialization_time = initialization_timer.getDuration();
 
     SPDLOG_INFO("Initialization Complete: {}s", (double)initialization_time / 1000);
 

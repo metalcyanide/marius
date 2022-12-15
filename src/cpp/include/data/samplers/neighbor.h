@@ -12,19 +12,19 @@ std::tuple<torch::Tensor, torch::Tensor> sample_all_gpu(torch::Tensor edges, tor
                                                         torch::Tensor num_neighbors);
 
 std::tuple<torch::Tensor, torch::Tensor> sample_all_cpu(torch::Tensor edges, torch::Tensor global_offsets, torch::Tensor local_offsets,
-                                                        torch::Tensor num_neighbors, int64_t total_neighbors);
+                                                        torch::Tensor num_neighbors, int32_t total_neighbors);
 
 std::tuple<torch::Tensor, torch::Tensor> sample_uniform_gpu(torch::Tensor edges, torch::Tensor global_offsets, torch::Tensor local_offsets,
-                                                            torch::Tensor num_neighbors, int64_t max_neighbors, int64_t max_id);
+                                                            torch::Tensor num_neighbors, int32_t max_neighbors, int32_t max_id);
 
 std::tuple<torch::Tensor, torch::Tensor> sample_uniform_cpu(torch::Tensor edges, torch::Tensor global_offsets, torch::Tensor local_offsets,
-                                                            torch::Tensor num_neighbors, int64_t max_neighbors, int64_t total_neighbors);
+                                                            torch::Tensor num_neighbors, int32_t max_neighbors, int32_t total_neighbors);
 
 std::tuple<torch::Tensor, torch::Tensor> sample_dropout_gpu(torch::Tensor edges, torch::Tensor global_offsets, torch::Tensor local_offsets,
                                                             torch::Tensor num_neighbors, float rate);
 
 std::tuple<torch::Tensor, torch::Tensor> sample_dropout_cpu(torch::Tensor edges, torch::Tensor global_offsets, torch::Tensor local_offsets,
-                                                            torch::Tensor num_neighbors, float rate, int64_t total_neighbors);
+                                                            torch::Tensor num_neighbors, float rate, int32_t total_neighbors);
 
 /**
  * Samples the neighbors from a given batch given a neighbor sampling strategy.
@@ -57,7 +57,7 @@ class LayeredNeighborSampler : public NeighborSampler {
     DENSEGraph getNeighbors(torch::Tensor node_ids, shared_ptr<MariusGraph> graph = nullptr) override;
 
     torch::Tensor computeDeltaIdsHelperMethod1(torch::Tensor hash_map, torch::Tensor node_ids, torch::Tensor delta_incoming_edges,
-                                               torch::Tensor delta_outgoing_edges, int64_t num_nodes_in_memory);
+                                               torch::Tensor delta_outgoing_edges, int32_t num_nodes_in_memory);
 };
 
 #endif  // MARIUS_NEIGHBOR_SAMPLER_H

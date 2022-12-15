@@ -6,7 +6,7 @@
 
 std::tuple<torch::Tensor, torch::Tensor> batch_sample(torch::Tensor edges, int num_negatives, bool inverse) {
     auto device = edges.device();
-    int64_t batch_size = edges.size(0);
+    int32_t batch_size = edges.size(0);
     Indices sample_edge_id = torch::randint(0, batch_size, {num_negatives}, device).to(torch::kInt64);
     torch::Tensor edge_sample;
 
@@ -24,9 +24,9 @@ torch::Tensor deg_negative_local_filter(torch::Tensor deg_sample_indices, torch:
         return torch::empty({0, 2}, ind_opts);
     }
 
-    int64_t num_chunks = deg_sample_indices.size(0);
-    int64_t chunk_size = ceil((double)edges.size(0) / num_chunks);
-    int64_t num_deg_negs = deg_sample_indices.size(1);
+    int32_t num_chunks = deg_sample_indices.size(0);
+    int32_t chunk_size = ceil((double)edges.size(0) / num_chunks);
+    int32_t num_deg_negs = deg_sample_indices.size(1);
 
     torch::Tensor chunk_ids = deg_sample_indices.div(chunk_size, "trunc");
     torch::Tensor inv_mask = chunk_ids - torch::arange(0, num_chunks, deg_sample_indices.device()).view({num_chunks, -1});
@@ -69,9 +69,9 @@ torch::Tensor compute_filter_corruption_cpu(shared_ptr<MariusGraph> graph, torch
         throw TensorSizeMismatchException(edges, "Edge list tensor must have 3 or 2 columns.");
     }
 
-    int64_t num_chunks = corruption_nodes.size(0);
-    int64_t num_edges = edges.size(0);
-    int64_t chunk_size = ceil((double)num_edges / num_chunks);
+    int32_t num_chunks = corruption_nodes.size(0);
+    int32_t num_edges = edges.size(0);
+    int32_t chunk_size = ceil((double)num_edges / num_chunks);
 
     torch::Tensor all_sorted_edges;
     torch::Tensor all_sorted_nodes;
@@ -127,24 +127,24 @@ torch::Tensor compute_filter_corruption_cpu(shared_ptr<MariusGraph> graph, torch
         all_sorted_nodes = all_sorted_edges.select(1, tup_id).contiguous();
     }
 
-    std::vector<std::vector<int64_t>> filters(num_edges);
+    std::vector<std::vector<int32_t>> filters(num_edges);
 
     torch::Tensor starts = torch::searchsorted(all_sorted_nodes, nodes);
     torch::Tensor ends = torch::searchsorted(all_sorted_nodes, nodes + 1);
 
-    auto edges_accessor = edges.accessor<int64_t, 2>();
-    auto starts_accessor = starts.accessor<int64_t, 1>();
-    auto ends_accessor = ends.accessor<int64_t, 1>();
-    auto sorted_edges_accessor = all_sorted_edges.accessor<int64_t, 2>();
-    auto negs_accessor = corruption_nodes.accessor<int64_t, 2>();
+    auto edges_accessor = edges.accessor<int32_t, 2>();
+    auto starts_accessor = starts.accessor<int32_t, 1>();
+    auto ends_accessor = ends.accessor<int32_t, 1>();
+    auto sorted_edges_accessor = all_sorted_edges.accessor<int32_t, 2>();
+    auto negs_accessor = corruption_nodes.accessor<int32_t, 2>();
 
     if (global) {
 #pragma omp parallel for
-        for (int64_t edge_id = 0; edge_id < nodes.size(0); edge_id++) {
-            int64_t curr_start = starts_accessor[edge_id];
-            int64_t curr_end = ends_accessor[edge_id];
+        for (int32_t edge_id = 0; edge_id < nodes.size(0); edge_id++) {
+            int32_t curr_start = starts_accessor[edge_id];
+            int32_t curr_end = ends_accessor[edge_id];
 
-            for (int64_t curr = curr_start; curr < curr_end; curr++) {
+            for (int32_t curr = curr_start; curr < curr_end; curr++) {
                 if ((has_relations && sorted_edges_accessor[curr][1] == edges_accessor[edge_id][1]) || !has_relations) {
                     filters[edge_id].emplace_back(sorted_edges_accessor[curr][corrupt_id]);
                 }
@@ -152,16 +152,16 @@ torch::Tensor compute_filter_corruption_cpu(shared_ptr<MariusGraph> graph, torch
         }
     } else {
 #pragma omp parallel for
-        for (int64_t edge_id = 0; edge_id < nodes.size(0); edge_id++) {
-            int64_t curr_start = starts_accessor[edge_id];
-            int64_t curr_end = ends_accessor[edge_id];
+        for (int32_t edge_id = 0; edge_id < nodes.size(0); edge_id++) {
+            int32_t curr_start = starts_accessor[edge_id];
+            int32_t curr_end = ends_accessor[edge_id];
 
             int chunk_id = edge_id / chunk_size;
 
-            for (int64_t neg_id = 0; neg_id < corruption_nodes.size(1); neg_id++) {
-                int64_t neg_node = negs_accessor[chunk_id][neg_id];
+            for (int32_t neg_id = 0; neg_id < corruption_nodes.size(1); neg_id++) {
+                int32_t neg_node = negs_accessor[chunk_id][neg_id];
 
-                for (int64_t curr = curr_start; curr < curr_end; curr++) {
+                for (int32_t curr = curr_start; curr < curr_end; curr++) {
                     if (sorted_edges_accessor[curr][corrupt_id] == neg_node) {
                         if ((has_relations && sorted_edges_accessor[curr][1] == edges_accessor[edge_id][1]) || !has_relations) {
                             filters[edge_id].emplace_back(neg_id);
@@ -173,19 +173,19 @@ torch::Tensor compute_filter_corruption_cpu(shared_ptr<MariusGraph> graph, torch
         }
     }
 
-    int64_t num_filt = 0;
+    int32_t num_filt = 0;
 
-    for (int64_t edge_id = 0; edge_id < nodes.size(0); edge_id++) {
+    for (int32_t edge_id = 0; edge_id < nodes.size(0); edge_id++) {
         num_filt += filters[edge_id].size();
     }
 
     torch::Tensor filter = torch::empty({num_filt, 2}, torch::kInt64);
 
-    auto filter_accessor = filter.accessor<int64_t, 2>();
+    auto filter_accessor = filter.accessor<int32_t, 2>();
 
-    int64_t offset = 0;
-    for (int64_t edge_id = 0; edge_id < nodes.size(0); edge_id++) {
-        for (int64_t j = 0; j < filters[edge_id].size(); j++) {
+    int32_t offset = 0;
+    for (int32_t edge_id = 0; edge_id < nodes.size(0); edge_id++) {
+        for (int32_t j = 0; j < filters[edge_id].size(); j++) {
             filter_accessor[offset][0] = edge_id;
             filter_accessor[offset][1] = filters[edge_id][j];
             offset++;
@@ -216,11 +216,11 @@ torch::Tensor compute_filter_corruption_gpu(shared_ptr<MariusGraph> graph, torch
         throw TensorSizeMismatchException(edges, "Edge list tensor must have 3 or 2 columns.");
     }
 
-    int64_t num_chunks = corruption_nodes.size(0);
-    int64_t num_edges = edges.size(0);
-    int64_t chunk_size = ceil((double)num_edges / num_chunks);
+    int32_t num_chunks = corruption_nodes.size(0);
+    int32_t num_edges = edges.size(0);
+    int32_t chunk_size = ceil((double)num_edges / num_chunks);
 
-    int64_t negs_per_pos = corruption_nodes.size(1);
+    int32_t negs_per_pos = corruption_nodes.size(1);
 
     torch::Tensor filter;
     torch::Tensor all_sorted_edges;
@@ -329,7 +329,7 @@ std::tuple<torch::Tensor, torch::Tensor> CorruptNodeNegativeSampler::getNegative
     vector<Indices> ret_indices(num_chunks_);
     vector<Indices> deg_sample_indices_vec(num_chunks_);
 
-    int64_t num_nodes = graph->num_nodes_in_memory_;
+    int32_t num_nodes = graph->num_nodes_in_memory_;
 
     int num_batch = (int)(num_negatives_ * degree_fraction_);
     int num_uni = num_negatives_ - num_batch;

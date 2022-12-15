@@ -199,7 +199,7 @@ torch::Tensor GeneralEncoder::forward(at::optional<torch::Tensor> embeddings, at
         bool use_sample = false;
         bool added_output = false;
 
-        int64_t output_size;
+        int32_t output_size;
         if (embeddings.has_value() && embeddings.value().defined()) {
             output_size = embeddings.value().size(0);
         } else if (features.has_value() && features.value().defined()) {
@@ -210,7 +210,7 @@ torch::Tensor GeneralEncoder::forward(at::optional<torch::Tensor> embeddings, at
 
         for (int j = 0; j < layers_[i].size(); j++) {
             if (instance_of<Layer, GNNLayer>(layers_[i][j])) {
-                output_size = dense_graph.node_ids_.size(0) - (dense_graph.hop_offsets_[1].item<int64_t>() - dense_graph.hop_offsets_[0].item<int64_t>());
+                output_size = dense_graph.node_ids_.size(0) - (dense_graph.hop_offsets_[1].item<int32_t>() - dense_graph.hop_offsets_[0].item<int32_t>());
             }
         }
 

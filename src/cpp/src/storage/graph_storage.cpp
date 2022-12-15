@@ -168,7 +168,7 @@ EdgeList GraphModelStorage::getEdges(Indices indices) {
     }
 }
 
-EdgeList GraphModelStorage::getEdgesRange(int64_t start, int64_t size) {
+EdgeList GraphModelStorage::getEdgesRange(int32_t start, int32_t size) {
     if (active_edges_.defined()) {
         return active_edges_.narrow(0, start, size);
     } else {
@@ -178,7 +178,7 @@ EdgeList GraphModelStorage::getEdgesRange(int64_t start, int64_t size) {
 
 void GraphModelStorage::shuffleEdges() { storage_ptrs_.edges->shuffle(); }
 
-Indices GraphModelStorage::getRandomNodeIds(int64_t size) {
+Indices GraphModelStorage::getRandomNodeIds(int32_t size) {
     torch::TensorOptions ind_opts = torch::TensorOptions().dtype(torch::kInt64).device(storage_ptrs_.edges->device_);
 
     Indices ret;
@@ -195,7 +195,7 @@ Indices GraphModelStorage::getRandomNodeIds(int64_t size) {
     return ret;
 }
 
-Indices GraphModelStorage::getNodeIdsRange(int64_t start, int64_t size) {
+Indices GraphModelStorage::getNodeIdsRange(int32_t start, int32_t size) {
     if (active_nodes_.defined()) {
         return active_nodes_.narrow(0, start, size);
     } else {
@@ -219,7 +219,7 @@ torch::Tensor GraphModelStorage::getNodeEmbeddings(Indices indices) {
     }
 }
 
-torch::Tensor GraphModelStorage::getNodeEmbeddingsRange(int64_t start, int64_t size) {
+torch::Tensor GraphModelStorage::getNodeEmbeddingsRange(int32_t start, int32_t size) {
     if (storage_ptrs_.node_embeddings != nullptr) {
         return storage_ptrs_.node_embeddings->range(start, size);
     } else {
@@ -235,7 +235,7 @@ torch::Tensor GraphModelStorage::getEncodedNodes(Indices indices) {
     }
 }
 
-torch::Tensor GraphModelStorage::getEncodedNodesRange(int64_t start, int64_t size) {
+torch::Tensor GraphModelStorage::getEncodedNodesRange(int32_t start, int32_t size) {
     if (storage_ptrs_.encoded_nodes != nullptr) {
         return storage_ptrs_.encoded_nodes->range(start, size);
     } else {
@@ -260,7 +260,7 @@ torch::Tensor GraphModelStorage::getNodeFeatures(Indices indices) {
     }
 }
 
-torch::Tensor GraphModelStorage::getNodeFeaturesRange(int64_t start, int64_t size) {
+torch::Tensor GraphModelStorage::getNodeFeaturesRange(int32_t start, int32_t size) {
     if (storage_ptrs_.node_features != nullptr) {
         return storage_ptrs_.node_features->range(start, size);
     } else {
@@ -276,7 +276,7 @@ torch::Tensor GraphModelStorage::getNodeLabels(Indices indices) {
     }
 }
 
-torch::Tensor GraphModelStorage::getNodeLabelsRange(int64_t start, int64_t size) {
+torch::Tensor GraphModelStorage::getNodeLabelsRange(int32_t start, int32_t size) {
     if (storage_ptrs_.node_labels != nullptr) {
         return storage_ptrs_.node_labels->range(start, size);
     } else {
@@ -290,7 +290,7 @@ void GraphModelStorage::updateAddNodeEmbeddings(Indices indices, torch::Tensor v
 
 void GraphModelStorage::updatePutEncodedNodes(Indices indices, torch::Tensor values) { storage_ptrs_.encoded_nodes->indexPut(indices, values); }
 
-void GraphModelStorage::updatePutEncodedNodesRange(int64_t start, int64_t size, torch::Tensor values) {
+void GraphModelStorage::updatePutEncodedNodesRange(int32_t start, int32_t size, torch::Tensor values) {
     storage_ptrs_.encoded_nodes->rangePut(start, size, values);
 }
 
@@ -302,7 +302,7 @@ OptimizerState GraphModelStorage::getNodeEmbeddingState(Indices indices) {
     }
 }
 
-OptimizerState GraphModelStorage::getNodeEmbeddingStateRange(int64_t start, int64_t size) {
+OptimizerState GraphModelStorage::getNodeEmbeddingStateRange(int32_t start, int32_t size) {
     if (storage_ptrs_.node_optimizer_state != nullptr) {
         return storage_ptrs_.node_optimizer_state->range(start, size);
     } else {
@@ -343,30 +343,30 @@ void GraphModelStorage::initializeInMemorySubGraph(torch::Tensor buffer_state) {
         int num_partitions = getNumPartitions();
 
         torch::Tensor new_in_mem_partition_ids = buffer_state;
-        auto new_in_mem_partition_ids_accessor = new_in_mem_partition_ids.accessor<int64_t, 1>();
+        auto new_in_mem_partition_ids_accessor = new_in_mem_partition_ids.accessor<int32_t, 1>();
 
         torch::Tensor in_mem_edge_bucket_ids = torch::zeros({num_edge_buckets_in_mem}, torch::kInt64);
         torch::Tensor in_mem_edge_bucket_sizes = torch::zeros({num_edge_buckets_in_mem}, torch::kInt64);
         torch::Tensor global_edge_bucket_starts = torch::zeros({num_edge_buckets_in_mem}, torch::kInt64);
 
-        auto in_mem_edge_bucket_ids_accessor = in_mem_edge_bucket_ids.accessor<int64_t, 1>();
-        auto in_mem_edge_bucket_sizes_accessor = in_mem_edge_bucket_sizes.accessor<int64_t, 1>();
-        auto global_edge_bucket_starts_accessor = global_edge_bucket_starts.accessor<int64_t, 1>();
+        auto in_mem_edge_bucket_ids_accessor = in_mem_edge_bucket_ids.accessor<int32_t, 1>();
+        auto in_mem_edge_bucket_sizes_accessor = in_mem_edge_bucket_sizes.accessor<int32_t, 1>();
+        auto global_edge_bucket_starts_accessor = global_edge_bucket_starts.accessor<int32_t, 1>();
 
         // TODO we don't need to do this every time
-        std::vector<int64_t> edge_bucket_sizes_ = storage_ptrs_.edges->getEdgeBucketSizes();
+        std::vector<int32_t> edge_bucket_sizes_ = storage_ptrs_.edges->getEdgeBucketSizes();
         torch::Tensor edge_bucket_sizes = torch::from_blob(edge_bucket_sizes_.data(), {(int)edge_bucket_sizes_.size()}, torch::kInt64);
         torch::Tensor edge_bucket_ends_disk = edge_bucket_sizes.cumsum(0);
         torch::Tensor edge_bucket_starts_disk = edge_bucket_ends_disk - edge_bucket_sizes;
-        auto edge_bucket_sizes_accessor = edge_bucket_sizes.accessor<int64_t, 1>();
-        auto edge_bucket_starts_disk_accessor = edge_bucket_starts_disk.accessor<int64_t, 1>();
+        auto edge_bucket_sizes_accessor = edge_bucket_sizes.accessor<int32_t, 1>();
+        auto edge_bucket_starts_disk_accessor = edge_bucket_starts_disk.accessor<int32_t, 1>();
 
 #pragma omp parallel for
         for (int i = 0; i < buffer_size; i++) {
             for (int j = 0; j < buffer_size; j++) {
-                int64_t edge_bucket_id = new_in_mem_partition_ids_accessor[i] * num_partitions + new_in_mem_partition_ids_accessor[j];
-                int64_t edge_bucket_size = edge_bucket_sizes_accessor[edge_bucket_id];
-                int64_t edge_bucket_start = edge_bucket_starts_disk_accessor[edge_bucket_id];
+                int32_t edge_bucket_id = new_in_mem_partition_ids_accessor[i] * num_partitions + new_in_mem_partition_ids_accessor[j];
+                int32_t edge_bucket_size = edge_bucket_sizes_accessor[edge_bucket_id];
+                int32_t edge_bucket_start = edge_bucket_starts_disk_accessor[edge_bucket_id];
 
                 int idx = i * buffer_size + j;
                 in_mem_edge_bucket_ids_accessor[idx] = edge_bucket_id;
@@ -376,18 +376,18 @@ void GraphModelStorage::initializeInMemorySubGraph(torch::Tensor buffer_state) {
         }
 
         torch::Tensor in_mem_edge_bucket_starts = in_mem_edge_bucket_sizes.cumsum(0);
-        int64_t total_size = in_mem_edge_bucket_starts[-1].item<int64_t>();
+        int32_t total_size = in_mem_edge_bucket_starts[-1].item<int32_t>();
         in_mem_edge_bucket_starts = in_mem_edge_bucket_starts - in_mem_edge_bucket_sizes;
 
-        auto in_mem_edge_bucket_starts_accessor = in_mem_edge_bucket_starts.accessor<int64_t, 1>();
+        auto in_mem_edge_bucket_starts_accessor = in_mem_edge_bucket_starts.accessor<int32_t, 1>();
 
         current_subgraph_state_->all_in_memory_edges_ = torch::empty({total_size, storage_ptrs_.edges->dim1_size_}, torch::kInt64);
 
 #pragma omp parallel for
         for (int i = 0; i < num_edge_buckets_in_mem; i++) {
-            int64_t edge_bucket_size = in_mem_edge_bucket_sizes_accessor[i];
-            int64_t edge_bucket_start = global_edge_bucket_starts_accessor[i];
-            int64_t local_offset = in_mem_edge_bucket_starts_accessor[i];
+            int32_t edge_bucket_size = in_mem_edge_bucket_sizes_accessor[i];
+            int32_t edge_bucket_start = global_edge_bucket_starts_accessor[i];
+            int32_t local_offset = in_mem_edge_bucket_starts_accessor[i];
 
             current_subgraph_state_->all_in_memory_edges_.narrow(0, local_offset, edge_bucket_size) =
                 storage_ptrs_.edges->range(edge_bucket_start, edge_bucket_size);
@@ -517,13 +517,13 @@ void GraphModelStorage::updateInMemorySubGraph_(shared_ptr<InMemorySubgraphState
     // get edge buckets that will be kept in memory
     torch::Tensor keep_mask = torch::ones({num_edge_buckets_in_mem}, torch::kBool);
     auto accessor_keep_mask = keep_mask.accessor<bool, 1>();
-    auto accessor_in_memory_edge_bucket_ids_ = current_subgraph_state_->in_memory_edge_bucket_ids_.accessor<int64_t, 1>();
+    auto accessor_in_memory_edge_bucket_ids_ = current_subgraph_state_->in_memory_edge_bucket_ids_.accessor<int32_t, 1>();
 
 #pragma omp parallel for
     for (int i = 0; i < num_edge_buckets_in_mem; i++) {
-        int64_t edge_bucket_id = accessor_in_memory_edge_bucket_ids_[i];
-        int64_t src_partition = edge_bucket_id / num_partitions;
-        int64_t dst_partition = edge_bucket_id % num_partitions;
+        int32_t edge_bucket_id = accessor_in_memory_edge_bucket_ids_[i];
+        int32_t src_partition = edge_bucket_id / num_partitions;
+        int32_t dst_partition = edge_bucket_id % num_partitions;
 
         for (int j = 0; j < num_swap_partitions; j++) {
             if (src_partition == evict_partition_ids[j] || dst_partition == evict_partition_ids[j]) {
@@ -539,11 +539,11 @@ void GraphModelStorage::updateInMemorySubGraph_(shared_ptr<InMemorySubgraphState
     // get new in memory partition ids
     keep_mask = torch::ones({buffer_size}, torch::kBool);
     accessor_keep_mask = keep_mask.accessor<bool, 1>();
-    auto accessor_in_memory_partition_ids_ = current_subgraph_state_->in_memory_partition_ids_.accessor<int64_t, 1>();
+    auto accessor_in_memory_partition_ids_ = current_subgraph_state_->in_memory_partition_ids_.accessor<int32_t, 1>();
 
 #pragma omp parallel for
     for (int i = 0; i < buffer_size; i++) {
-        int64_t partition_id = accessor_in_memory_partition_ids_[i];
+        int32_t partition_id = accessor_in_memory_partition_ids_[i];
 
         for (int j = 0; j < num_swap_partitions; j++) {
             if (partition_id == evict_partition_ids[j]) {
@@ -555,8 +555,8 @@ void GraphModelStorage::updateInMemorySubGraph_(shared_ptr<InMemorySubgraphState
 
     torch::Tensor old_in_mem_partition_ids = current_subgraph_state_->in_memory_partition_ids_.masked_select(keep_mask);
     torch::Tensor new_in_mem_partition_ids = current_subgraph_state_->in_memory_partition_ids_.masked_scatter(~keep_mask, admit_ids_tensor);
-    auto old_in_mem_partition_ids_accessor = old_in_mem_partition_ids.accessor<int64_t, 1>();
-    auto new_in_mem_partition_ids_accessor = new_in_mem_partition_ids.accessor<int64_t, 1>();
+    auto old_in_mem_partition_ids_accessor = old_in_mem_partition_ids.accessor<int32_t, 1>();
+    auto new_in_mem_partition_ids_accessor = new_in_mem_partition_ids.accessor<int32_t, 1>();
 
     // get new incoming edge buckets
     int num_new_edge_buckets = num_swap_partitions * (num_remaining_partitions + buffer_size);
@@ -565,24 +565,24 @@ void GraphModelStorage::updateInMemorySubGraph_(shared_ptr<InMemorySubgraphState
     torch::Tensor new_edge_bucket_sizes = torch::zeros({num_new_edge_buckets}, torch::kInt64);
     torch::Tensor new_global_edge_bucket_starts = torch::zeros({num_new_edge_buckets}, torch::kInt64);
 
-    auto new_edge_bucket_ids_accessor = new_edge_bucket_ids.accessor<int64_t, 1>();
-    auto new_edge_bucket_sizes_accessor = new_edge_bucket_sizes.accessor<int64_t, 1>();
-    auto new_global_edge_bucket_starts_accessor = new_global_edge_bucket_starts.accessor<int64_t, 1>();
+    auto new_edge_bucket_ids_accessor = new_edge_bucket_ids.accessor<int32_t, 1>();
+    auto new_edge_bucket_sizes_accessor = new_edge_bucket_sizes.accessor<int32_t, 1>();
+    auto new_global_edge_bucket_starts_accessor = new_global_edge_bucket_starts.accessor<int32_t, 1>();
 
     // TODO we don't need to do this every time
-    std::vector<int64_t> edge_bucket_sizes_ = storage_ptrs_.edges->getEdgeBucketSizes();
+    std::vector<int32_t> edge_bucket_sizes_ = storage_ptrs_.edges->getEdgeBucketSizes();
     torch::Tensor edge_bucket_sizes = torch::from_blob(edge_bucket_sizes_.data(), {(int)edge_bucket_sizes_.size()}, torch::kInt64);
     torch::Tensor edge_bucket_ends_disk = edge_bucket_sizes.cumsum(0);
     torch::Tensor edge_bucket_starts_disk = edge_bucket_ends_disk - edge_bucket_sizes;
-    auto edge_bucket_sizes_accessor = edge_bucket_sizes.accessor<int64_t, 1>();
-    auto edge_bucket_starts_disk_accessor = edge_bucket_starts_disk.accessor<int64_t, 1>();
+    auto edge_bucket_sizes_accessor = edge_bucket_sizes.accessor<int32_t, 1>();
+    auto edge_bucket_starts_disk_accessor = edge_bucket_starts_disk.accessor<int32_t, 1>();
 
 #pragma omp parallel for
     for (int i = 0; i < num_remaining_partitions; i++) {
         for (int j = 0; j < num_swap_partitions; j++) {
-            int64_t edge_bucket_id = old_in_mem_partition_ids_accessor[i] * num_partitions + admit_partition_ids[j];
-            int64_t edge_bucket_size = edge_bucket_sizes_accessor[edge_bucket_id];
-            int64_t edge_bucket_start = edge_bucket_starts_disk_accessor[edge_bucket_id];
+            int32_t edge_bucket_id = old_in_mem_partition_ids_accessor[i] * num_partitions + admit_partition_ids[j];
+            int32_t edge_bucket_size = edge_bucket_sizes_accessor[edge_bucket_id];
+            int32_t edge_bucket_start = edge_bucket_starts_disk_accessor[edge_bucket_id];
 
             int idx = i * num_swap_partitions + j;
             new_edge_bucket_ids_accessor[idx] = edge_bucket_id;
@@ -596,9 +596,9 @@ void GraphModelStorage::updateInMemorySubGraph_(shared_ptr<InMemorySubgraphState
 #pragma omp parallel for
     for (int i = 0; i < buffer_size; i++) {
         for (int j = 0; j < num_swap_partitions; j++) {
-            int64_t edge_bucket_id = admit_partition_ids[j] * num_partitions + new_in_mem_partition_ids_accessor[i];
-            int64_t edge_bucket_size = edge_bucket_sizes_accessor[edge_bucket_id];
-            int64_t edge_bucket_start = edge_bucket_starts_disk_accessor[edge_bucket_id];
+            int32_t edge_bucket_id = admit_partition_ids[j] * num_partitions + new_in_mem_partition_ids_accessor[i];
+            int32_t edge_bucket_size = edge_bucket_sizes_accessor[edge_bucket_id];
+            int32_t edge_bucket_start = edge_bucket_starts_disk_accessor[edge_bucket_id];
 
             int idx = offset + i * num_swap_partitions + j;
             new_edge_bucket_ids_accessor[idx] = edge_bucket_id;
@@ -617,12 +617,12 @@ void GraphModelStorage::updateInMemorySubGraph_(shared_ptr<InMemorySubgraphState
 
     // put the ids in the correct order so the mapped edges remain sorted
     torch::Tensor src_ids_order = torch::zeros({num_edge_buckets_in_mem}, torch::kInt64);
-    auto src_ids_order_accessor = src_ids_order.accessor<int64_t, 1>();
+    auto src_ids_order_accessor = src_ids_order.accessor<int32_t, 1>();
 
 #pragma omp parallel for
     for (int i = 0; i < buffer_size; i++) {
         for (int j = 0; j < buffer_size; j++) {
-            int64_t edge_bucket_id = new_in_mem_partition_ids_accessor[i] * num_partitions + new_in_mem_partition_ids_accessor[j];
+            int32_t edge_bucket_id = new_in_mem_partition_ids_accessor[i] * num_partitions + new_in_mem_partition_ids_accessor[j];
 
             int idx = i * buffer_size + j;
             src_ids_order_accessor[idx] = edge_bucket_id;
@@ -639,23 +639,23 @@ void GraphModelStorage::updateInMemorySubGraph_(shared_ptr<InMemorySubgraphState
 
     // with everything in order grab the edge buckets
     torch::Tensor in_mem_edge_bucket_starts = in_mem_edge_bucket_sizes.cumsum(0);
-    int64_t total_size = in_mem_edge_bucket_starts[-1].item<int64_t>();
+    int32_t total_size = in_mem_edge_bucket_starts[-1].item<int32_t>();
     in_mem_edge_bucket_starts = in_mem_edge_bucket_starts - in_mem_edge_bucket_sizes;
 
-    auto in_mem_edge_bucket_sizes_accessor = in_mem_edge_bucket_sizes.accessor<int64_t, 1>();
-    auto local_or_global_edge_bucket_starts_accessor = local_or_global_edge_bucket_starts.accessor<int64_t, 1>();
+    auto in_mem_edge_bucket_sizes_accessor = in_mem_edge_bucket_sizes.accessor<int32_t, 1>();
+    auto local_or_global_edge_bucket_starts_accessor = local_or_global_edge_bucket_starts.accessor<int32_t, 1>();
     auto in_mem_mask_accessor = in_mem_mask.accessor<bool, 1>();
-    auto in_mem_edge_bucket_starts_accessor = in_mem_edge_bucket_starts.accessor<int64_t, 1>();
+    auto in_mem_edge_bucket_starts_accessor = in_mem_edge_bucket_starts.accessor<int32_t, 1>();
 
     torch::Tensor new_all_in_memory_edges = torch::empty({total_size, storage_ptrs_.edges->dim1_size_}, torch::kInt64);
 
 // get the edges
 #pragma omp parallel for
     for (int i = 0; i < num_edge_buckets_in_mem; i++) {
-        int64_t edge_bucket_size = in_mem_edge_bucket_sizes_accessor[i];
-        int64_t edge_bucket_start = local_or_global_edge_bucket_starts_accessor[i];
+        int32_t edge_bucket_size = in_mem_edge_bucket_sizes_accessor[i];
+        int32_t edge_bucket_start = local_or_global_edge_bucket_starts_accessor[i];
         bool in_mem = in_mem_mask_accessor[i];
-        int64_t local_offset = in_mem_edge_bucket_starts_accessor[i];
+        int32_t local_offset = in_mem_edge_bucket_starts_accessor[i];
 
         if (in_mem) {
             new_all_in_memory_edges.narrow(0, local_offset, edge_bucket_size) =

@@ -7,9 +7,9 @@
 
 #include "common/datatypes.h"
 
-torch::Tensor segment_ids_from_offsets(torch::Tensor offsets, int64_t input_size);
+torch::Tensor segment_ids_from_offsets(torch::Tensor offsets, int32_t input_size);
 
-torch::Tensor segmented_sum(torch::Tensor tensor, torch::Tensor segment_ids, int64_t num_segments);
+torch::Tensor segmented_sum(torch::Tensor tensor, torch::Tensor segment_ids, int32_t num_segments);
 
 torch::Tensor segmented_sum_with_offsets(torch::Tensor tensor, torch::Tensor offsets);
 

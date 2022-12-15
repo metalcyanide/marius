@@ -57,7 +57,7 @@ class Model : public torch::nn::Module {
 
     void setup_optimizers(shared_ptr<ModelConfig> model_config);
 
-    int64_t get_base_embedding_dim();
+    int32_t get_base_embedding_dim();
 
     bool has_embeddings();
 };

@@ -77,7 +77,7 @@ class Pipeline {
     std::atomic<int> batches_in_flight_;
     std::mutex *max_batches_lock_;
     std::condition_variable *max_batches_cv_;
-    std::atomic<int64_t> edges_processed_;
+    std::atomic<int32_t> edges_processed_;
 
     shared_ptr<Queue<shared_ptr<Batch>>> loaded_batches_;
     shared_ptr<Queue<shared_ptr<Batch>>> update_batches_;
@@ -92,7 +92,7 @@ class Pipeline {
     bool encode_only_;
     bool train_;
 
-    int64_t curr_pos_;
+    int32_t curr_pos_;
 
     ~Pipeline();
 

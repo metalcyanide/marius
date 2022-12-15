@@ -19,7 +19,7 @@ class MariusGraph {
     EdgeList dst_sorted_edges_;           // easy access of incoming neighbors
     EdgeList active_in_memory_subgraph_;  // shuffled
 
-    int64_t num_nodes_in_memory_;
+    int32_t num_nodes_in_memory_;
     Indices node_ids_;
     Indices out_sorted_uniques_;
     Indices out_offsets_;
@@ -39,7 +39,7 @@ class MariusGraph {
 
     MariusGraph(EdgeList edges);
 
-    MariusGraph(EdgeList src_sorted_edges, EdgeList dst_sorted_edges, int64_t num_nodes_in_memory);
+    MariusGraph(EdgeList src_sorted_edges, EdgeList dst_sorted_edges, int32_t num_nodes_in_memory);
 
     ~MariusGraph();
 
@@ -139,7 +139,7 @@ class DENSEGraph : public MariusGraph {
      * Gets the offset of the node ids in the outermost layer.
      * @return Layer offset
      */
-    int64_t getLayerOffset();
+    int32_t getLayerOffset();
 
     /**
      * Maps local IDs to batch.
