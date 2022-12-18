@@ -56,7 +56,7 @@ torch::Tensor GATLayer::forward(torch::Tensor inputs, DENSEGraph dense_graph, bo
 
     torch::Tensor incoming_total_neighbors = dense_graph.getNumNeighbors(true);
 
-    int64_t layer_offset = dense_graph.getLayerOffset();
+    int32_t layer_offset = dense_graph.getLayerOffset();
     torch::Tensor parent_ids = torch::arange(inputs.size(0) - layer_offset, incoming_total_neighbors.options()).repeat_interleave(incoming_total_neighbors);
 
     if (train && input_dropout_ > 0) {

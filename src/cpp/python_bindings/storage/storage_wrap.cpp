@@ -12,11 +12,11 @@ class PyStorage : Storage {
 
     void indexAdd(torch::Tensor indices, torch::Tensor values) override { PYBIND11_OVERRIDE_PURE(void, Storage, indexAdd, indices, values); }
 
-    torch::Tensor range(int64_t offset, int64_t n) override { PYBIND11_OVERRIDE_PURE(torch::Tensor, Storage, range, offset, n); }
+    torch::Tensor range(int32_t offset, int32_t n) override { PYBIND11_OVERRIDE_PURE(torch::Tensor, Storage, range, offset, n); }
 
     void indexPut(torch::Tensor indices, torch::Tensor values) override { PYBIND11_OVERRIDE_PURE(void, Storage, indexPut, indices, values); }
 
-    void rangePut(int64_t offset, int64_t n, torch::Tensor values) override { PYBIND11_OVERRIDE_PURE(void, Storage, rangePut, offset, n, values); }
+    void rangePut(int32_t offset, int32_t n, torch::Tensor values) override { PYBIND11_OVERRIDE_PURE(void, Storage, rangePut, offset, n, values); }
 
     void load() override { PYBIND11_OVERRIDE_PURE(void, Storage, load); }
 
@@ -55,7 +55,7 @@ void init_storage(py::module &m) {
         .def_readwrite("filename", &PartitionBufferStorage::filename_)
         .def_readwrite("loaded", &PartitionBufferStorage::loaded_)
         .def_readwrite("options", &PartitionBufferStorage::options_)
-        .def(py::init<string, int64_t, int64_t, shared_ptr<PartitionBufferOptions>>(), py::arg("filename"), py::arg("dim0_size"), py::arg("dim1_size"),
+        .def(py::init<string, int32_t, int32_t, shared_ptr<PartitionBufferOptions>>(), py::arg("filename"), py::arg("dim0_size"), py::arg("dim1_size"),
              py::arg("options"))
         .def(py::init<string, torch::Tensor, shared_ptr<PartitionBufferOptions>>(), py::arg("filename"), py::arg("data"), py::arg("options"))
         .def(py::init<string, shared_ptr<PartitionBufferOptions>>(), py::arg("filename"), py::arg("options"))
@@ -70,8 +70,8 @@ void init_storage(py::module &m) {
 
     py::class_<FlatFile, Storage, std::shared_ptr<FlatFile>>(m, "FlatFile")
         .def(py::init([](std::string filename, std::vector<int64_t> shape, py::object py_dtype, bool alloc) {
-                 int64_t dim0_size;
-                 int64_t dim1_size;
+                 int32_t dim0_size;
+                 int32_t dim1_size;
 
                  if (shape.size() > 2 || shape.empty()) {
                      throw MariusRuntimeException("Tensor shape must be 1 or 2 dimensional.");
@@ -106,8 +106,8 @@ void init_storage(py::module &m) {
 
     py::class_<InMemory, Storage, std::shared_ptr<InMemory>>(m, "InMemory")
         .def(py::init([](std::string filename, std::vector<int64_t> shape, py::object py_dtype, torch::Device device) {
-                 int64_t dim0_size;
-                 int64_t dim1_size;
+                 int32_t dim0_size;
+                 int32_t dim1_size;
 
                  if (shape.size() > 2 || shape.empty()) {
                      throw MariusRuntimeException("Tensor shape must be 1 or 2 dimensional.");
@@ -147,14 +147,14 @@ void init_storage(py::module &m) {
 
             struct stat stat_buf;
             int rc = stat(filename.c_str(), &stat_buf);
-            int64_t file_size = rc == 0 ? stat_buf.st_size : -1;
+            int32_t file_size = rc == 0 ? stat_buf.st_size : -1;
 
             if (file_size == -1) {
                 throw MariusRuntimeException("Cannot get size of file: " + filename);
             }
 
-            int64_t dim0_size = file_size / dtype_size;
-            int64_t dim1_size = 1;
+            int32_t dim0_size = file_size / dtype_size;
+            int32_t dim1_size = 1;
 
             auto storage = std::make_shared<InMemory>(filename, dim0_size, dim1_size, dtype, device);
             storage->load();

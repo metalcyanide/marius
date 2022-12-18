@@ -29,8 +29,8 @@ void check_score_shapes(torch::Tensor pos_scores, torch::Tensor neg_scores) {
 }
 
 torch::Tensor to_one_hot(torch::Tensor labels, int num_classes) {
-    torch::Tensor one_hot_encodings = torch::zeros({labels.size(0), num_classes}, torch::kInt64);
-    one_hot_encodings.index_fill_(1, labels.to(torch::kInt64), 1);
+    torch::Tensor one_hot_encodings = torch::zeros({labels.size(0), num_classes}, torch::kInt32);
+    one_hot_encodings.index_fill_(1, labels.to(torch::kInt32), 1);
     return one_hot_encodings.to(torch::kFloat32);
 }
 
@@ -40,7 +40,7 @@ std::tuple<torch::Tensor, torch::Tensor> scores_to_labels(torch::Tensor pos_scor
     if (one_hot) {
         labels = torch::cat({torch::ones_like(pos_scores), torch::zeros_like(neg_scores)}, -1);
     } else {
-        auto options = torch::TensorOptions().dtype(torch::kInt64).device(pos_scores.device());
+        auto options = torch::TensorOptions().dtype(torch::kInt32).device(pos_scores.device());
         labels = torch::zeros({pos_scores.size(0)}, options);
     }
 
@@ -73,7 +73,7 @@ torch::Tensor RankingLoss::operator()(torch::Tensor pos_scores, torch::Tensor ne
         throw MariusRuntimeException("Input to ranking loss function must be scores. This loss function is unsupported for classification.");
     }
 
-    auto device_options = torch::TensorOptions().dtype(torch::kInt64).device(pos_scores.device());
+    auto device_options = torch::TensorOptions().dtype(torch::kInt32).device(pos_scores.device());
     torch::nn::functional::MarginRankingLossFuncOptions options;
     if (reduction_type_ == LossReduction::MEAN) {
         options.reduction(torch::kMean);

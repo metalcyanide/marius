@@ -1132,7 +1132,7 @@ Storage Backend Options
      - Required
    * - dtype
      - String
-     - The datatype of the storage. Valid options ["FLOAT", "FLOAT32", "DOUBLE", "FLOAT64", "INT", "INT32", "LONG, "INT64"]. The default value depends on the data being stored. For edges, the default is "INT32", otherwise the default is "FLOAT32"
+     - The datatype of the storage. Valid options ["FLOAT", "FLOAT32", "DOUBLE", "FLOAT64", "INT", "INT32", "LONG, "int32"]. The default value depends on the data being stored. For edges, the default is "INT32", otherwise the default is "FLOAT32"
      - No
 
 A configuration defining the datatype of the input edges as `int`.

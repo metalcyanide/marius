@@ -55,9 +55,9 @@ void init_graph_storage(py::module &m) {
 
                      shared_ptr<FlatFile> init_optimizer_state_storage = std::make_shared<FlatFile>(optimizer_state_filename, node_embeddings->dtype_);
 
-                     int64_t curr_num_nodes = 0;
-                     int64_t offset = 0;
-                     int64_t num_nodes = node_embeddings->getDim0();
+                     int32_t curr_num_nodes = 0;
+                     int32_t offset = 0;
+                     int32_t num_nodes = node_embeddings->getDim0();
 
                      while (offset < num_nodes) {
                          if (num_nodes - offset < MAX_NODE_EMBEDDING_INIT_SIZE) {

@@ -4,9 +4,9 @@
 
 #include "nn/initialization.h"
 
-std::tuple<int64_t, int64_t> compute_fans(std::vector<int64_t> shape) {
-    int64_t fan_in = 0;
-    int64_t fan_out = 0;
+std::tuple<int32_t, int32_t> compute_fans(std::vector<int64_t> shape) {
+    int32_t fan_in = 0;
+    int32_t fan_out = 0;
 
     if (shape.size() < 1) {
         fan_in = fan_out = 1;
@@ -23,9 +23,9 @@ std::tuple<int64_t, int64_t> compute_fans(std::vector<int64_t> shape) {
     return std::forward_as_tuple(fan_in, fan_out);
 }
 
-torch::Tensor glorot_uniform(std::vector<int64_t> shape, std::tuple<int64_t, int64_t> fans, torch::TensorOptions options) {
-    int64_t fan_in = std::get<0>(fans);
-    int64_t fan_out = std::get<1>(fans);
+torch::Tensor glorot_uniform(std::vector<int64_t> shape, std::tuple<int32_t, int32_t> fans, torch::TensorOptions options) {
+    int32_t fan_in = std::get<0>(fans);
+    int32_t fan_out = std::get<1>(fans);
 
     if (fan_in == -1 || fan_out == -1) {
         auto tup = compute_fans(shape);
@@ -40,9 +40,9 @@ torch::Tensor glorot_uniform(std::vector<int64_t> shape, std::tuple<int64_t, int
     return ret;
 }
 
-torch::Tensor glorot_normal(std::vector<int64_t> shape, std::tuple<int64_t, int64_t> fans, torch::TensorOptions options) {
-    int64_t fan_in = std::get<0>(fans);
-    int64_t fan_out = std::get<1>(fans);
+torch::Tensor glorot_normal(std::vector<int64_t> shape, std::tuple<int32_t, int32_t> fans, torch::TensorOptions options) {
+    int32_t fan_in = std::get<0>(fans);
+    int32_t fan_out = std::get<1>(fans);
 
     if (fan_in == -1 || fan_out == -1) {
         auto tup = compute_fans(shape);
@@ -65,7 +65,7 @@ torch::Tensor normal_init(float mean, float std, std::vector<int64_t> shape, tor
 torch::Tensor constant_init(float constant, std::vector<int64_t> shape, torch::TensorOptions options) { return torch::ones(shape, options) * constant; }
 
 torch::Tensor initialize_tensor(shared_ptr<InitConfig> init_config, std::vector<int64_t> shape, torch::TensorOptions tensor_options,
-                                std::tuple<int64_t, int64_t> fans) {
+                                std::tuple<int32_t, int32_t> fans) {
     InitDistribution init_distribution = init_config->type;
     shared_ptr<InitOptions> init_options = init_config->options;
 
@@ -98,7 +98,7 @@ torch::Tensor initialize_tensor(shared_ptr<InitConfig> init_config, std::vector<
 
 // Allows for initialization of small pieces of a larger tensor, for initialization methods which scale based on the tensor size
 torch::Tensor initialize_subtensor(shared_ptr<InitConfig> init_config, std::vector<int64_t> sub_shape, std::vector<int64_t> full_shape,
-                                   torch::TensorOptions tensor_options, std::tuple<int64_t, int64_t> fans) {
+                                   torch::TensorOptions tensor_options, std::tuple<int32_t, int32_t> fans) {
     InitDistribution init_distribution = init_config->type;
     torch::Tensor ret;
 

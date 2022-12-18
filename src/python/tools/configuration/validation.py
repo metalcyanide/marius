@@ -4,7 +4,7 @@ from pathlib import Path
 import psutil
 from omegaconf import MISSING
 
-long_dtype_list = ["long", "int64"]
+long_dtype_list = ["long", "int32"]
 
 
 def get_lines_in_file(filepath):

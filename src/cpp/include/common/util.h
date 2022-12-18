@@ -40,8 +40,8 @@ class Timer {
         }
     }
 
-    int64_t getDuration(bool ms = true) {
-        int64_t duration;
+    int32_t getDuration(bool ms = true) {
+        int32_t duration;
         if (ms) {
             duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop_time_ - start_time_).count();
         } else {
@@ -63,19 +63,19 @@ void assert_no_nans(torch::Tensor values);
 
 void assert_no_neg(torch::Tensor values);
 
-void assert_in_range(torch::Tensor values, int64_t start, int64_t end);
+void assert_in_range(torch::Tensor values, int32_t start, int32_t end);
 
 void process_mem_usage();
 
-void *memset_wrapper(void *ptr, int value, int64_t num);
+void *memset_wrapper(void *ptr, int value, int32_t num);
 
-void *memcpy_wrapper(void *dest, const void *src, int64_t count);
+void *memcpy_wrapper(void *dest, const void *src, int32_t count);
 
-int64_t pread_wrapper(int fd, void *buf, int64_t count, int64_t offset);
+int32_t pread_wrapper(int fd, void *buf, int32_t count, int32_t offset);
 
-int64_t pwrite_wrapper(int fd, const void *buf, int64_t count, int64_t offset);
+int32_t pwrite_wrapper(int fd, const void *buf, int32_t count, int32_t offset);
 
-int64_t get_dtype_size_wrapper(torch::Dtype dtype_);
+int32_t get_dtype_size_wrapper(torch::Dtype dtype_);
 
 std::string get_directory(std::string path);
 

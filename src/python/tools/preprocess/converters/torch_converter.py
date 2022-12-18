@@ -201,7 +201,7 @@ def map_edge_lists(
             out_degrees = torch.scatter_add(
                 out_degrees,
                 0,
-                torch.squeeze(edge_lists[0][:, 0]).to(torch.int64),
+                torch.squeeze(edge_lists[0][:, 0]).to(torch.int32),
                 torch.ones(
                     [
                         edge_lists[0].shape[0],
@@ -219,7 +219,7 @@ def map_edge_lists(
             in_degrees = torch.scatter_add(
                 in_degrees,
                 0,
-                torch.squeeze(edge_lists[0][:, -1]).to(torch.int64),
+                torch.squeeze(edge_lists[0][:, -1]).to(torch.int32),
                 torch.ones(
                     [
                         edge_lists[0].shape[0],
@@ -238,20 +238,20 @@ def map_edge_lists(
             if sequential_train_nodes and sequential_deg_nodes > 0:
                 print("Sequential Train and High Deg Nodes")
                 seq_nodes = torch.unique(torch.cat([high_degree_nodes, known_node_ids[0]]))
-                seq_nodes = seq_nodes.index_select(0, torch.randperm(seq_nodes.size(0), dtype=torch.int64))
+                seq_nodes = seq_nodes.index_select(0, torch.randperm(seq_nodes.size(0), dtype=torch.int32))
                 print("Total Seq Nodes: ", seq_nodes.shape[0])
             else:
                 print("Sequential High Deg Nodes")
                 seq_nodes = high_degree_nodes
 
         seq_mask = torch.zeros(num_nodes, dtype=torch.bool)
-        seq_mask[seq_nodes.to(torch.int64)] = True
+        seq_mask[seq_nodes.to(torch.int32)] = True
         all_other_nodes = torch.arange(num_nodes, dtype=seq_nodes.dtype)
         all_other_nodes = all_other_nodes[~seq_mask]
 
         mapped_node_ids = -1 * torch.ones(num_nodes, dtype=output_dtype)
-        mapped_node_ids[seq_nodes.to(torch.int64)] = torch.arange(seq_nodes.shape[0], dtype=output_dtype)
-        mapped_node_ids[all_other_nodes.to(torch.int64)] = seq_nodes.shape[0] + torch.randperm(
+        mapped_node_ids[seq_nodes.to(torch.int32)] = torch.arange(seq_nodes.shape[0], dtype=output_dtype)
+        mapped_node_ids[all_other_nodes.to(torch.int32)] = seq_nodes.shape[0] + torch.randperm(
             num_nodes - seq_nodes.shape[0], dtype=output_dtype
         )
     else:
@@ -272,11 +272,11 @@ def map_edge_lists(
 
     output_edge_lists = []
     for edge_list in edge_lists:
-        new_src = extended_map[edge_list[:, 0].to(torch.int64)]
-        new_dst = extended_map[edge_list[:, -1].to(torch.int64)]
+        new_src = extended_map[edge_list[:, 0].to(torch.int32)]
+        new_dst = extended_map[edge_list[:, -1].to(torch.int32)]
 
         if has_rels:
-            new_rel = mapped_rel_ids[edge_list[:, 1].to(torch.int64)]
+            new_rel = mapped_rel_ids[edge_list[:, 1].to(torch.int32)]
             output_edge_lists.append(torch.stack([new_src, new_rel, new_dst], dim=1))
         else:
             output_edge_lists.append(torch.stack([new_src, new_dst], dim=1))
@@ -462,8 +462,8 @@ class TorchEdgeListConverter(object):
 
         if dtype.upper() == "INT32" or dtype.upper() == "INT":
             self.dtype = torch.int32
-        elif dtype.upper() == "INT64" or dtype.upper() == "LONG":
-            self.dtype = torch.int64
+        elif dtype.upper() == "int32" or dtype.upper() == "LONG":
+            self.dtype = torch.int32
         else:
             raise RuntimeError("Unrecognized datatype")
 

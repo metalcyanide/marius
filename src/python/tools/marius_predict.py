@@ -277,13 +277,13 @@ def get_dtype(storage_backend, args):
             numpy_dtype = np.int32
             str_dtype = "int32"
         else:
-            numpy_dtype = np.int64
-            str_dtype = "int64"
+            numpy_dtype = np.int32
+            str_dtype = "int32"
     else:
         if str_dtype == "int32" or str_dtype == "int":
             numpy_dtype = np.int32
-        elif str_dtype == "int64" or str_dtype == "long":
-            numpy_dtype = np.int64
+        elif str_dtype == "int32" or str_dtype == "long":
+            numpy_dtype = np.int32
         else:
             raise RuntimeError("Unsupported datatype for input file.")
 

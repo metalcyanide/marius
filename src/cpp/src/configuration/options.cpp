@@ -295,8 +295,8 @@ torch::Dtype getDtype(std::string string_val) {
 
     if (string_val == "INT" || string_val == "INT32") {
         return torch::kInt32;
-    } else if (string_val == "INT64" || string_val == "LONG") {
-        return torch::kInt64;
+    } else if (string_val == "int32" || string_val == "LONG") {
+        return torch::kInt32;
     } else if (string_val == "FLOAT" || string_val == "FLOAT32") {
         return torch::kFloat32;
     } else if (string_val == "DOUBLE" || string_val == "FLOAT64") {

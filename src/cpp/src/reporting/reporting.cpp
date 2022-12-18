@@ -137,17 +137,17 @@ void LinkPredictionReporter::save(string directory, bool scores, bool ranks) {
         std::vector<torch::Dtype> dtypes;
         if (all_edges_.size(1) == 3) {
             header_string = "src,rel,dst";
-            dtypes = {torch::kInt64, torch::kInt64, torch::kInt64};
+            dtypes = {torch::kInt32, torch::kInt32, torch::kInt32};
         } else {
             header_string = "src,dst";
-            dtypes = {torch::kInt64, torch::kInt64};
+            dtypes = {torch::kInt32, torch::kInt32};
         }
 
         torch::Tensor output_tensor = all_edges_.to(torch::kFloat32);
         if (ranks) {
             output_tensor = torch::cat({output_tensor, all_ranks_.narrow(0, 0, all_edges_.size(0)).to(torch::kFloat32).unsqueeze(1)}, 1);
             header_string = header_string + ",rank";
-            dtypes.emplace_back(torch::kInt64);
+            dtypes.emplace_back(torch::kInt32);
         }
 
         if (scores) {
@@ -159,11 +159,11 @@ void LinkPredictionReporter::save(string directory, bool scores, bool ranks) {
         scores_stream << header_string << "\n";
         auto accessor = output_tensor.accessor<float, 2>();
 
-        int64_t num_rows = output_tensor.size(0);
-        int64_t num_cols = output_tensor.size(1);
-        for (int64_t row = 0; row < num_rows; row++) {
+        int32_t num_rows = output_tensor.size(0);
+        int32_t num_cols = output_tensor.size(1);
+        for (int32_t row = 0; row < num_rows; row++) {
             string row_string = "";
-            for (int64_t col = 0; col < num_cols - 1; col++) {
+            for (int32_t col = 0; col < num_cols - 1; col++) {
                 row_string = row_string + std::to_string((int)accessor[row][col]) + ",";
             }
 
@@ -272,11 +272,11 @@ void NodeClassificationReporter::save(string directory, bool labels) {
         labels_stream << header_string << "\n";
         auto accessor = output_tensor.accessor<float, 2>();
 
-        int64_t num_rows = output_tensor.size(0);
-        int64_t num_cols = output_tensor.size(1);
-        for (int64_t row = 0; row < num_rows; row++) {
+        int32_t num_rows = output_tensor.size(0);
+        int32_t num_cols = output_tensor.size(1);
+        for (int32_t row = 0; row < num_rows; row++) {
             string row_string = "";
-            for (int64_t col = 0; col < num_cols - 1; col++) {
+            for (int32_t col = 0; col < num_cols - 1; col++) {
                 row_string = row_string + std::to_string((int)accessor[row][col]) + ",";
             }
             row_string = row_string + std::to_string((int)accessor[row][num_cols - 1]) + "\n";
@@ -287,7 +287,7 @@ void NodeClassificationReporter::save(string directory, bool labels) {
     }
 }
 
-ProgressReporter::ProgressReporter(std::string item_name, int64_t total_items, int total_reports) {
+ProgressReporter::ProgressReporter(std::string item_name, int32_t total_items, int total_reports) {
     item_name_ = item_name;
     total_items_ = total_items;
     current_item_ = 0;
@@ -303,7 +303,7 @@ void ProgressReporter::clear() {
     next_report_ = items_per_report_;
 }
 
-void ProgressReporter::addResult(int64_t items_processed) {
+void ProgressReporter::addResult(int32_t items_processed) {
     lock();
     current_item_ += items_processed;
     if (current_item_ >= next_report_) {

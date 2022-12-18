@@ -18,8 +18,8 @@ class StorageTest : public ::testing::Test {
    protected:
     vector<std::string> filenames_array;
     vector<int> fd_array;
-    int64_t dim0_size;
-    int64_t dim1_size;
+    int32_t dim0_size;
+    int32_t dim1_size;
     vector<torch::Dtype> dtype_array;
     vector<int> dtype_size_array;
     vector<torch::Tensor> rand_tensors_array;
@@ -27,7 +27,7 @@ class StorageTest : public ::testing::Test {
     StorageTest() {
         dim0_size = 46;
         dim1_size = 1000;
-        dtype_array = {torch::kInt32, torch::kInt64, torch::kFloat16, torch::kFloat32, torch::kFloat64};
+        dtype_array = {torch::kInt32, torch::kInt32, torch::kFloat16, torch::kFloat32, torch::kFloat64};
         for (int i = 0; i < dtype_array.size(); i++) dtype_size_array.push_back(get_dtype_size_wrapper(dtype_array[i]));
     }
 
@@ -92,7 +92,7 @@ class PartitionBufferStorageTest : public StorageTest {
     shared_ptr<PartitionBufferOptions> options;
     int capacity;
     int num_partitions;
-    int64_t partition_size;
+    int32_t partition_size;
     int fine_to_coarse_ratio;
     vector<torch::Tensor> buffer_states;
 
@@ -106,29 +106,29 @@ class PartitionBufferStorageTest : public StorageTest {
         fine_to_coarse_ratio = 2;
 
         for (int i = 1; i < 5; i++) {
-            torch::Tensor state = torch::zeros({2}, torch::kInt64);
+            torch::Tensor state = torch::zeros({2}, torch::kInt32);
             state[1] = i;
             buffer_states.push_back(state);
         }
         for (int i = 4; i >= 2; i--) {
-            torch::Tensor state = torch::ones({2}, torch::kInt64);
+            torch::Tensor state = torch::ones({2}, torch::kInt32);
             state[1] = i;
             buffer_states.push_back(state);
         }
         {
-            torch::Tensor state = torch::zeros({2}, torch::kInt64);
+            torch::Tensor state = torch::zeros({2}, torch::kInt32);
             state[0] = 2;
             state[1] = 3;
             buffer_states.push_back(state);
         }
         {
-            torch::Tensor state = torch::zeros({2}, torch::kInt64);
+            torch::Tensor state = torch::zeros({2}, torch::kInt32);
             state[0] = 2;
             state[1] = 4;
             buffer_states.push_back(state);
         }
         {
-            torch::Tensor state = torch::zeros({2}, torch::kInt64);
+            torch::Tensor state = torch::zeros({2}, torch::kInt32);
             state[0] = 3;
             state[1] = 4;
             buffer_states.push_back(state);
@@ -226,7 +226,7 @@ TEST_F(FlatFileTest, TestFlatFileSortEdges) {
     FlatFile flat_file(edges_data_path, 0, num_cols, torch::kInt32);
     flat_file.append(rand_tensor);
 
-    vector<int64_t> partition_sizes = partitionEdges(rand_tensor, 3, num_nodes + 1);
+    vector<int32_t> partition_sizes = partitionEdges(rand_tensor, 3, num_nodes + 1);
     createTmpFile(edges_bucket_partition_path);
     {
         std::ofstream ostrm;
@@ -243,7 +243,7 @@ TEST_F(FlatFileTest, TestFlatFileSortEdges) {
     rand_tensor_2.copy_(rand_tensor_1);
 
     flat_file.sort(true);
-    vector<int64_t> edge_bucket_sizes = flat_file.getEdgeBucketSizes();
+    vector<int32_t> edge_bucket_sizes = flat_file.getEdgeBucketSizes();
     sortWithinEdgeBuckets(rand_tensor_2, edge_bucket_sizes);
     rand_tensor_1 = flat_file.range(0, num_edges);
     ASSERT_EQ(rand_tensor_1.equal(rand_tensor_2), true);
@@ -285,7 +285,7 @@ TEST_F(InMemoryTest, TestIndexAdd) {
         // indexAdd should check tensor dims
         ASSERT_THROW(in_memory.indexAdd(indices, torch::randn({indices.size(0) + 1, dim1_size}, dtype_array[i])), std::runtime_error);
         ASSERT_THROW(in_memory.indexAdd(indices, torch::randn({indices.size(0), dim1_size + 1}, dtype_array[i])), std::runtime_error);
-        ASSERT_THROW(in_memory.indexAdd(torch::randint(1000, {10, 10}, torch::kInt64), rand_values), std::runtime_error);
+        ASSERT_THROW(in_memory.indexAdd(torch::randint(1000, {10, 10}, torch::kInt32), rand_values), std::runtime_error);
         rand_values = torch::Tensor();
         ASSERT_THROW(in_memory.indexAdd(indices, rand_values), std::runtime_error);
     }
@@ -296,7 +296,7 @@ TEST_F(InMemoryTest, TestIndexPut) {
     for (int i = 3; i < 4; i++) {
         InMemory in_memory(filenames_array[i], rand_tensors_array[i], torch::kCPU);
         in_memory.load();
-        torch::Tensor indices = std::get<0>(at::_unique(torch::randint(dim0_size, dim1_size, torch::kInt64)));
+        torch::Tensor indices = std::get<0>(at::_unique(torch::randint(dim0_size, dim1_size, torch::kInt32)));
         torch::Tensor rand_values = getRandTensor(indices.size(0), dim1_size, dtype_array[i]);
 
         in_memory.indexPut(indices, rand_values);
@@ -308,7 +308,7 @@ TEST_F(InMemoryTest, TestIndexPut) {
         rand_values = getRandTensor(indices.size(0), dim1_size + 1, dtype_array[i]);
         ASSERT_THROW(in_memory.indexPut(indices, rand_values), std::runtime_error);
         rand_values = getRandTensor(indices.size(0), dim1_size, dtype_array[i]);
-        ASSERT_THROW(in_memory.indexPut(torch::randint(1000, {10, 10}, torch::kInt64), rand_values), std::runtime_error);
+        ASSERT_THROW(in_memory.indexPut(torch::randint(1000, {10, 10}, torch::kInt32), rand_values), std::runtime_error);
 
         rand_values = torch::Tensor();
         ASSERT_THROW(in_memory.indexPut(indices, rand_values), std::runtime_error);
@@ -347,7 +347,7 @@ TEST_F(InMemoryTest, TestInMemorySortEdges) {
     createTmpFile(edges_data_path);
 
     InMemory in_memory(edges_data_path, num_edges, num_cols, torch::kInt32, torch::kCPU);
-    vector<int64_t> partition_sizes = partitionEdges(rand_tensor, 3, num_nodes + 1);
+    vector<int32_t> partition_sizes = partitionEdges(rand_tensor, 3, num_nodes + 1);
     createTmpFile(edges_bucket_partition_path);
     {
         std::ofstream ostrm;
@@ -364,7 +364,7 @@ TEST_F(InMemoryTest, TestInMemorySortEdges) {
     rand_tensor_2.copy_(rand_tensor_1);
 
     in_memory.sort(true);
-    vector<int64_t> edge_bucket_sizes = in_memory.getEdgeBucketSizes();
+    vector<int32_t> edge_bucket_sizes = in_memory.getEdgeBucketSizes();
     sortWithinEdgeBuckets(rand_tensor_2, edge_bucket_sizes);
     rand_tensor_1 = in_memory.range(0, num_edges);
     ASSERT_EQ(rand_tensor_1.equal(rand_tensor_2), true);
@@ -410,7 +410,7 @@ TEST_F(PartitionBufferStorageTest, TestIndexRead) {
         ASSERT_EQ(expected.equal(pbs.indexRead(indices)), true);
 
         // indexRead should take in only 1d tensors.
-        ASSERT_THROW(pbs.indexRead(torch::randint(1000, {10, 10}, torch::kInt64)), std::runtime_error);
+        ASSERT_THROW(pbs.indexRead(torch::randint(1000, {10, 10}, torch::kInt32)), std::runtime_error);
     }
 }
 
@@ -458,7 +458,7 @@ TEST_F(PartitionBufferStorageTest, TestIndexAdd) {
         rand_values = getRandTensor(indices.size(0), dim1_size + 1, dtype_array[i]);
         ASSERT_THROW(pbs.indexAdd(indices, rand_values), std::runtime_error);
         rand_values = getRandTensor(indices.size(0), dim1_size, dtype_array[i]);
-        ASSERT_THROW(pbs.indexAdd(torch::randint(1000, {10, 10}, torch::kInt64), rand_values), std::runtime_error);
+        ASSERT_THROW(pbs.indexAdd(torch::randint(1000, {10, 10}, torch::kInt32), rand_values), std::runtime_error);
         rand_values = torch::Tensor();
         ASSERT_THROW(pbs.indexAdd(indices, rand_values), std::runtime_error);
     }

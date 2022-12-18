@@ -217,7 +217,7 @@ void Model::setup_optimizers(shared_ptr<ModelConfig> model_config) {
     }
 }
 
-int64_t Model::get_base_embedding_dim() {
+int32_t Model::get_base_embedding_dim() {
     int max_offset = 0;
     int size = 0;
 
@@ -316,7 +316,7 @@ void Model::train_batch(shared_ptr<Batch> batch, bool call_step) {
 
     } else if (learning_task_ == LearningTask::NODE_CLASSIFICATION) {
         torch::Tensor y_pred = forward_nc(batch->node_embeddings_, batch->node_features_, batch->dense_graph_, true);
-        loss = (*loss_function_)(y_pred, batch->node_labels_.to(torch::kInt64), false);
+        loss = (*loss_function_)(y_pred, batch->node_labels_.to(torch::kInt32), false);
     } else {
         throw MariusRuntimeException("Unsupported learning task for training");
     }
@@ -405,7 +405,7 @@ shared_ptr<Model> initModelFromConfig(shared_ptr<ModelConfig> model_config, std:
 
         int last_stage = model_config->encoder->layers.size() - 1;
         int last_layer = model_config->encoder->layers[last_stage].size() - 1;
-        int64_t dim = model_config->encoder->layers[last_stage][last_layer]->output_dim;
+        int32_t dim = model_config->encoder->layers[last_stage][last_layer]->output_dim;
 
         decoder = get_edge_decoder(model_config->decoder->type, decoder_options->edge_decoder_method, num_relations, dim, tensor_options,
                                    decoder_options->inverse_edges);

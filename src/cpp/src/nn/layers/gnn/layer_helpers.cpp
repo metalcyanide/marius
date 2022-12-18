@@ -8,7 +8,7 @@
 #include "pytorch_scatter/segment_max.h"
 #endif
 
-torch::Tensor segment_ids_from_offsets(torch::Tensor segment_offsets, int64_t input_size) {
+torch::Tensor segment_ids_from_offsets(torch::Tensor segment_offsets, int32_t input_size) {
     torch::Tensor segment_ids = torch::zeros({input_size + 1}, segment_offsets.options());
     torch::Tensor ones_tensor = torch::ones({segment_offsets.size(0)}, segment_offsets.options());
     segment_ids.index_add_(0, segment_offsets, ones_tensor);
@@ -16,7 +16,7 @@ torch::Tensor segment_ids_from_offsets(torch::Tensor segment_offsets, int64_t in
     return segment_ids.narrow(0, 0, segment_ids.size(0) - 1);
 }
 
-torch::Tensor segmented_sum(torch::Tensor tensor, torch::Tensor segment_ids, int64_t num_segments) {
+torch::Tensor segmented_sum(torch::Tensor tensor, torch::Tensor segment_ids, int32_t num_segments) {
     auto shape = tensor.sizes().vec();
     shape[0] = num_segments;
     torch::Tensor segsum = torch::zeros(shape, tensor.options());

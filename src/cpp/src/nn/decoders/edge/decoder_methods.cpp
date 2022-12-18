@@ -101,7 +101,7 @@ std::tuple<torch::Tensor, torch::Tensor, torch::Tensor, torch::Tensor> node_corr
     }
 
     if (pos_scores.size(0) != neg_scores.size(0)) {
-        int64_t new_size = neg_scores.size(0) - pos_scores.size(0);
+        int32_t new_size = neg_scores.size(0) - pos_scores.size(0);
         torch::nn::functional::PadFuncOptions options({0, new_size});
         pos_scores = torch::nn::functional::pad(pos_scores, options);
 

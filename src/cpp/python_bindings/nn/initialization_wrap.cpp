@@ -6,7 +6,7 @@ void init_initialization(py::module &m) {
 
     m.def(
         "glorot_uniform",
-        [](std::vector<int64_t> shape, py::object py_device, py::object py_dtype, std::tuple<int64_t, int64_t> fans) {
+        [](std::vector<int64_t> shape, py::object py_device, py::object py_dtype, std::tuple<int32_t, int32_t> fans) {
             torch::TensorOptions options;
             options = options.device(torch::python::detail::py_object_to_device(py_device)).dtype(torch::python::detail::py_object_to_dtype(py_dtype));
             return glorot_uniform(shape, fans, options);
@@ -15,7 +15,7 @@ void init_initialization(py::module &m) {
 
     m.def(
         "glorot_normal",
-        [](std::vector<int64_t> shape, py::object py_device, py::object py_dtype, std::tuple<int64_t, int64_t> fans) {
+        [](std::vector<int64_t> shape, py::object py_device, py::object py_dtype, std::tuple<int32_t, int32_t> fans) {
             torch::TensorOptions options;
             options = options.device(torch::python::detail::py_object_to_device(py_device)).dtype(torch::python::detail::py_object_to_dtype(py_dtype));
             return glorot_normal(shape, fans, options);
@@ -51,7 +51,7 @@ void init_initialization(py::module &m) {
 
     m.def(
         "initialize_tensor",
-        [](shared_ptr<InitConfig> init_config, std::vector<int64_t> shape, py::object py_device, py::object py_dtype, std::tuple<int64_t, int64_t> fans) {
+        [](shared_ptr<InitConfig> init_config, std::vector<int64_t> shape, py::object py_device, py::object py_dtype, std::tuple<int32_t, int32_t> fans) {
             torch::TensorOptions options;
             options = options.device(torch::python::detail::py_object_to_device(py_device)).dtype(torch::python::detail::py_object_to_dtype(py_dtype));
             return initialize_tensor(init_config, shape, options, fans);
@@ -61,7 +61,7 @@ void init_initialization(py::module &m) {
     m.def(
         "initialize_subtensor",
         [](shared_ptr<InitConfig> init_config, std::vector<int64_t> sub_shape, std::vector<int64_t> full_shape, py::object py_device, py::object py_dtype,
-           std::tuple<int64_t, int64_t> fans) {
+           std::tuple<int32_t, int32_t> fans) {
             torch::TensorOptions options;
             options = options.device(torch::python::detail::py_object_to_device(py_device)).dtype(torch::python::detail::py_object_to_dtype(py_dtype));
             return initialize_subtensor(init_config, sub_shape, full_shape, options, fans);

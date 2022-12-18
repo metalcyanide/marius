@@ -21,14 +21,14 @@ class PartitionBufferTest : public ::testing::Test {
     string filename;
     int fd;
     torch::Tensor rand_tensor_float32;
-    int64_t rows;
-    int64_t cols;
+    int32_t rows;
+    int32_t cols;
     int capacity;
     int num_partitions;
     int fine_to_coarse_ratio;
-    int64_t partition_size;
+    int32_t partition_size;
     int embedding_size;
-    int64_t total_embeddings;
+    int32_t total_embeddings;
     torch::Dtype dtype;
     int dtype_size;
     vector<torch::Tensor> buffer_states;
@@ -54,33 +54,33 @@ class PartitionBufferTest : public ::testing::Test {
         fd = createTmpFile(filename);
         ASSERT_NE(fd, -1);
 
-        int64_t tensor_size = rows * cols * dtype_size;
+        int32_t tensor_size = rows * cols * dtype_size;
         ASSERT_EQ(genRandTensorAndWriteToFile(rand_tensor_float32, total_embeddings, embedding_size, dtype, fd), total_embeddings * tensor_size);
 
         for (int i = 1; i < 5; i++) {
-            torch::Tensor state = torch::zeros({2}, torch::kInt64);
+            torch::Tensor state = torch::zeros({2}, torch::kInt32);
             state[1] = i;
             buffer_states.push_back(state);
         }
         for (int i = 4; i >= 2; i--) {
-            torch::Tensor state = torch::ones({2}, torch::kInt64);
+            torch::Tensor state = torch::ones({2}, torch::kInt32);
             state[1] = i;
             buffer_states.push_back(state);
         }
         {
-            torch::Tensor state = torch::zeros({2}, torch::kInt64);
+            torch::Tensor state = torch::zeros({2}, torch::kInt32);
             state[0] = 2;
             state[1] = 3;
             buffer_states.push_back(state);
         }
         {
-            torch::Tensor state = torch::zeros({2}, torch::kInt64);
+            torch::Tensor state = torch::zeros({2}, torch::kInt32);
             state[0] = 2;
             state[1] = 4;
             buffer_states.push_back(state);
         }
         {
-            torch::Tensor state = torch::zeros({2}, torch::kInt64);
+            torch::Tensor state = torch::zeros({2}, torch::kInt32);
             state[0] = 3;
             state[1] = 4;
             buffer_states.push_back(state);
@@ -103,9 +103,9 @@ class PartitionBufferTest : public ::testing::Test {
 class PartitionedFileTest : public ::testing::Test {
    protected:
     int num_partitions;
-    int64_t partition_size;
+    int32_t partition_size;
     int embedding_size;
-    int64_t total_embeddings;
+    int32_t total_embeddings;
     torch::Dtype dtype;
     int dtype_size;
     string filename;
@@ -279,7 +279,7 @@ TEST_F(PartitionBufferTest, TestPartitionBufferIndexRead) {
     ASSERT_EQ(expected.equal(pb->indexRead(indices)), true);
 
     // indexRead should take in only 1d tensors.
-    ASSERT_THROW(pb->indexRead(torch::randint(1000, {10, 10}, torch::kInt64)), std::runtime_error);
+    ASSERT_THROW(pb->indexRead(torch::randint(1000, {10, 10}, torch::kInt32)), std::runtime_error);
 }
 
 TEST_F(PartitionBufferTest, TestPartitionBufferIndexAdd) {
@@ -293,7 +293,7 @@ TEST_F(PartitionBufferTest, TestPartitionBufferIndexAdd) {
     // indexAdd should check tensor dims
     ASSERT_THROW(pb->indexAdd(indices, torch::randint(1000, {indices.size(0) + 1, rows * cols}, torch::kFloat32)), std::runtime_error);
     ASSERT_THROW(pb->indexAdd(indices, torch::randint(1000, {indices.size(0), rows * cols + 1}, torch::kFloat32)), std::runtime_error);
-    ASSERT_THROW(pb->indexAdd(torch::randint(1000, {10, 10}, torch::kInt64), rand_values), std::runtime_error);
+    ASSERT_THROW(pb->indexAdd(torch::randint(1000, {10, 10}, torch::kInt32), rand_values), std::runtime_error);
 }
 
 TEST_F(PartitionBufferTest, TestPartitionBufferSync) {
@@ -309,10 +309,10 @@ TEST_F(PartitionBufferTest, TestPartitionBufferSync) {
 
 TEST_F(PartitionBufferTest, TestPartitionBufferGlobalMap) {
     initializePartitionBuffer(false);
-    torch::Tensor exp_map = -torch::ones({total_embeddings}, torch::kInt64);
+    torch::Tensor exp_map = -torch::ones({total_embeddings}, torch::kInt32);
     exp_map.slice(0, 0, 20) = torch::arange(0, 20);
     ASSERT_EQ(exp_map.equal(pb->getGlobalToLocalMap(true)), true);
-    exp_map.slice(0, 10, 20) = -torch::ones({10}, torch::kInt64);
+    exp_map.slice(0, 10, 20) = -torch::ones({10}, torch::kInt32);
     exp_map.slice(0, 20, 30) = torch::arange(10, 20);
     ASSERT_EQ(exp_map.equal(pb->getGlobalToLocalMap(false)), true);
 }
@@ -324,7 +324,7 @@ TEST_F(PartitionedFileTest, TestReadPartition) {
     torch::Tensor rand_tensor = torch::randint(1000, {partition_size, embedding_size}, torch::kFloat32);
     void *addr = rand_tensor.data_ptr();
     pf->readPartition(addr, &p);
-    torch::Tensor indices = at::randint(idx_offset, total_embeddings, 10, torch::kInt64);
+    torch::Tensor indices = at::randint(idx_offset, total_embeddings, 10, torch::kInt32);
     torch::Tensor returned_values = p.indexRead(indices);
     ASSERT_EQ(returned_values.equal(rand_tensor_float32.index_select(0, indices)), true);
 
@@ -376,7 +376,7 @@ TEST_F(LookaheadBlockTest, TestMoveToBuffer) {
 
     vector<void *> buff_mem(num_per_lookahead);
     for (int i = 0; i < buff_mem.size(); i++) buff_mem[i] = malloc(partition_size * embedding_size * dtype_size);
-    vector<int64_t> buff_ids;
+    vector<int32_t> buff_ids;
     buff_ids.push_back(0);
     buff_ids.push_back(1);
     for (int i = 2; i < 4; i++) curr_partitions[i - 2] = partitions[i];
@@ -398,7 +398,7 @@ TEST_F(LookaheadBlockTest, TestMoveToBuffer) {
     curr_partitions.pop_back();
 
     // move_to_buffer should throw an exception when buffer size is less than the existing partitions
-    ASSERT_THROW(lb.move_to_buffer(vector<void *>(), vector<int64_t>(), curr_partitions), std::runtime_error);
+    ASSERT_THROW(lb.move_to_buffer(vector<void *>(), vector<int32_t>(), curr_partitions), std::runtime_error);
 
     lb.move_to_buffer(buff_mem, buff_ids, curr_partitions);
     pf->readPartition(buff_mem[0], returned_partitions[4]);
@@ -420,7 +420,7 @@ TEST_F(AsyncWriteBlockTest, TestAsyncWrite) {
     awb.start();
 
     vector<void *> buff_mem(num_per_evict);
-    vector<int64_t> buff_ids(num_per_evict);
+    vector<int32_t> buff_ids(num_per_evict);
     for (int i = 0; i < buff_mem.size(); i++) {
         buff_mem[i] = malloc(partition_size * embedding_size * dtype_size);
         buff_ids[i] = i;

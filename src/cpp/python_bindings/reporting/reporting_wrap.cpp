@@ -53,7 +53,7 @@ void init_reporting(py::module &m) {
         .def("save", &NodeClassificationReporter::save, py::arg("directory"), py::arg("labels") = false);
 
     py::class_<ProgressReporter, Reporter, std::shared_ptr<ProgressReporter>>(m, "ProgressReporter")
-        .def(py::init<std::string, int64_t, int>(), py::arg("item_name"), py::arg("total_items"), py::arg("total_reports"))
+        .def(py::init<std::string, int32_t, int>(), py::arg("item_name"), py::arg("total_items"), py::arg("total_reports"))
         .def("clear", &ProgressReporter::clear)
         .def("add_result", &ProgressReporter::addResult, py::arg("items_processed"));
 }

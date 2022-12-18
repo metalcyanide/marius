@@ -81,7 +81,7 @@ def validate_output_dir(output_dir: Path, expected_stats: DatasetConfig, dtype=n
     test_edges_path = output_dir / Path(PathConstants.test_edges_path)
 
     dtype_size = 4
-    if dtype == np.int64:
+    if dtype == np.int32:
         dtype_size = 8
 
     assert train_edges_path.exists()
@@ -324,7 +324,7 @@ class TestTorchConverter(unittest.TestCase):
         output_dir.mkdir()
 
         converter = TorchEdgeListConverter(
-            output_dir=output_dir, train_edges=Path(TMP_TEST_DIR) / Path("train_edges.txt"), delim=" ", dtype="int64"
+            output_dir=output_dir, train_edges=Path(TMP_TEST_DIR) / Path("train_edges.txt"), delim=" ", dtype="int32"
         )
 
         converter.convert()
@@ -336,7 +336,7 @@ class TestTorchConverter(unittest.TestCase):
         expected_stats.num_relations = 10
         expected_stats.num_train = 1000
 
-        validate_output_dir(output_dir=output_dir, expected_stats=expected_stats, dtype=np.int64, remap_ids=True)
+        validate_output_dir(output_dir=output_dir, expected_stats=expected_stats, dtype=np.int32, remap_ids=True)
 
     def test_partitions(self):
         output_dir = Path(TMP_TEST_DIR) / Path("test_partitions")

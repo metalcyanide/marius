@@ -22,7 +22,7 @@ void assert_no_neg(torch::Tensor values) {
     }
 }
 
-void assert_in_range(torch::Tensor values, int64_t start, int64_t end) {
+void assert_in_range(torch::Tensor values, int32_t start, int32_t end) {
     if ((values.ge(start) & values.le(end)).any().item<bool>()) {
         throw MariusRuntimeException("Tensor contains is not in range: " + std::to_string(start) + "-" + std::to_string(end));
     }
@@ -49,9 +49,9 @@ void process_mem_usage() {
     SPDLOG_DEBUG("VM Usage: {}GB. RSS: {}GB", vm_usage / pow(2, 20), resident_set / pow(2, 20));
 }
 
-void *memset_wrapper(void *ptr, int value, int64_t num) {
-    int64_t curr_bytes = 0;
-    int64_t local_offset = 0;
+void *memset_wrapper(void *ptr, int value, int32_t num) {
+    int32_t curr_bytes = 0;
+    int32_t local_offset = 0;
 
     while (local_offset < num) {
         curr_bytes = num - local_offset;
@@ -67,9 +67,9 @@ void *memset_wrapper(void *ptr, int value, int64_t num) {
     return ptr;
 }
 
-void *memcpy_wrapper(void *dest, const void *src, int64_t count) {
-    int64_t curr_bytes = 0;
-    int64_t local_offset = 0;
+void *memcpy_wrapper(void *dest, const void *src, int32_t count) {
+    int32_t curr_bytes = 0;
+    int32_t local_offset = 0;
 
     while (local_offset < count) {
         curr_bytes = count - local_offset;
@@ -85,9 +85,9 @@ void *memcpy_wrapper(void *dest, const void *src, int64_t count) {
     return dest;
 }
 
-int64_t pread_wrapper(int fd, void *buf, int64_t count, int64_t offset) {
-    int64_t curr_bytes = 0;
-    int64_t local_offset = 0;
+int32_t pread_wrapper(int fd, void *buf, int32_t count, int32_t offset) {
+    int32_t curr_bytes = 0;
+    int32_t local_offset = 0;
 
     while (local_offset < count) {
         curr_bytes = count - local_offset;
@@ -105,9 +105,9 @@ int64_t pread_wrapper(int fd, void *buf, int64_t count, int64_t offset) {
     return count;
 }
 
-int64_t pwrite_wrapper(int fd, const void *buf, int64_t count, int64_t offset) {
-    int64_t curr_bytes = 0;
-    int64_t local_offset = 0;
+int32_t pwrite_wrapper(int fd, const void *buf, int32_t count, int32_t offset) {
+    int32_t curr_bytes = 0;
+    int32_t local_offset = 0;
 
     while (local_offset < count) {
         curr_bytes = count - local_offset;
@@ -125,7 +125,7 @@ int64_t pwrite_wrapper(int fd, const void *buf, int64_t count, int64_t offset) {
     return count;
 }
 
-int64_t get_dtype_size_wrapper(torch::Dtype dtype_) {
+int32_t get_dtype_size_wrapper(torch::Dtype dtype_) {
     if (dtype_ == torch::kFloat64) {
         return 8;
     }
@@ -135,8 +135,8 @@ int64_t get_dtype_size_wrapper(torch::Dtype dtype_) {
     if (dtype_ == torch::kFloat16) {
         return 2;
     }
-    if (dtype_ == torch::kInt64) {
-        return 8;
+    if (dtype_ == torch::kInt32) {
+        return 4;
     }
     if (dtype_ == torch::kInt32) {
         return 4;
@@ -174,8 +174,8 @@ std::tuple<torch::Tensor, std::vector<torch::Tensor>> map_tensors(std::vector<to
 
     std::vector<torch::Tensor> mapped_tensors;
 
-    int64_t offset = 0;
-    int64_t size;
+    int32_t offset = 0;
+    int32_t size;
     for (auto tensor : unmapped_tensors) {
         size = tensor.size(0);
         mapped_tensors.emplace_back(mapped_all_ids.narrow(0, offset, size));

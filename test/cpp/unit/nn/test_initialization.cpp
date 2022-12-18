@@ -9,9 +9,9 @@ auto f16_options = torch::TensorOptions().dtype(torch::kFloat16);
 auto f32_options = torch::TensorOptions().dtype(torch::kFloat32);
 auto f64_options = torch::TensorOptions().dtype(torch::kFloat64);
 
-std::vector<int64_t> shape1 = {5};
-std::vector<int64_t> shape2 = {5, 3};
-std::vector<int64_t> shape3 = {5, 3, 2};
+std::vector<int32_t> shape1 = {5};
+std::vector<int32_t> shape2 = {5, 3};
+std::vector<int32_t> shape3 = {5, 3, 2};
 
 TEST(TestInitialization, TestUniform) {
     float scale_factor1 = 1.0;
@@ -50,7 +50,7 @@ TEST(TestInitialization, TestUniform) {
 }
 
 TEST(TestInitialization, TestNormal) {
-    std::vector<int64_t> shape_large = {500, 500};  // large shape used to get better estimate of mean and std for normal distribution
+    std::vector<int32_t> shape_large = {500, 500};  // large shape used to get better estimate of mean and std for normal distribution
 
     float mean1 = 0.0;
     float mean2 = -.5;
@@ -130,10 +130,10 @@ TEST(TestInitialization, TestConstant) {
 }
 
 TEST(TestInitialization, TestComputeFans) {
-    std::tuple<int64_t, int64_t> output;
+    std::tuple<int32_t, int32_t> output;
 
     // dims = 0
-    std::vector<int64_t> shape = {};
+    std::vector<int32_t> shape = {};
     output = compute_fans(shape);
 
     ASSERT_EQ(std::get<0>(output), 1);
@@ -184,11 +184,11 @@ TEST(TestInitialization, TestComputeFans) {
 }
 
 TEST(TestInitialization, TestGlorotUniform) {
-    std::tuple<int64_t, int64_t> compute_fans = {-1, -1};
-    std::tuple<int64_t, int64_t> given_fans = {1, 1};
+    std::tuple<int32_t, int32_t> compute_fans = {-1, -1};
+    std::tuple<int32_t, int32_t> given_fans = {1, 1};
 
     // dims = 0
-    std::vector<int64_t> shape = {};
+    std::vector<int32_t> shape = {};
     torch::Tensor tensor = glorot_uniform(shape, compute_fans, f32_options);
     float limit = sqrt(6.0 / (1 + 1));
     ASSERT_TRUE((tensor.ge(-limit) & tensor.le(limit)).all().item<bool>());
@@ -281,12 +281,12 @@ TEST(TestInitialization, TestGlorotUniform) {
 }
 
 TEST(TestInitialization, TestGlorotNormal) {
-    std::tuple<int64_t, int64_t> compute_fans = {-1, -1};
-    std::tuple<int64_t, int64_t> given_fans = {1, 1};
+    std::tuple<int32_t, int32_t> compute_fans = {-1, -1};
+    std::tuple<int32_t, int32_t> given_fans = {1, 1};
 
     // only checking shape since it's non-trivial to check if a tensor with few elements comes from the normal distribution
     // dims = 0
-    std::vector<int64_t> shape = {};
+    std::vector<int32_t> shape = {};
     torch::Tensor tensor = glorot_normal(shape, compute_fans, f32_options);
     ASSERT_TRUE(tensor.sizes() == shape);
 
@@ -326,7 +326,7 @@ TEST(TestInitialization, TestTensorInit) {
     float limit = sqrt(6.0 / (shape2[0] + shape2[1]));
     ASSERT_TRUE((tensor.ge(-limit) & tensor.le(limit)).all().item<bool>());
 
-    std::tuple<int64_t, int64_t> fans = {10, 25};
+    std::tuple<int32_t, int32_t> fans = {10, 25};
     tensor = initialize_tensor(init_config, shape2, f32_options, fans);
     ASSERT_TRUE(tensor.sizes() == shape2);
     ASSERT_TRUE(tensor.dtype() == torch::kFloat32);
@@ -376,8 +376,8 @@ TEST(TestInitialization, TestSubtensorInit) {
     torch::Tensor tensor;
     shared_ptr<InitConfig> init_config = std::make_shared<InitConfig>();
 
-    std::vector<int64_t> sub_shape = {2, 3};
-    std::vector<int64_t> full_shape = {4, 3};
+    std::vector<int32_t> sub_shape = {2, 3};
+    std::vector<int32_t> full_shape = {4, 3};
 
     init_config->type = InitDistribution::GLOROT_NORMAL;
     tensor = initialize_subtensor(init_config, sub_shape, full_shape, f32_options);
@@ -391,7 +391,7 @@ TEST(TestInitialization, TestSubtensorInit) {
     float limit = sqrt(6.0 / (sub_shape[0] + sub_shape[1]));
     ASSERT_TRUE((tensor.ge(-limit) & tensor.le(limit)).all().item<bool>());
 
-    std::tuple<int64_t, int64_t> fans = {10, 25};
+    std::tuple<int32_t, int32_t> fans = {10, 25};
     tensor = initialize_subtensor(init_config, sub_shape, full_shape, f32_options, fans);
     ASSERT_TRUE(tensor.sizes() == sub_shape);
     ASSERT_TRUE(tensor.dtype() == torch::kFloat32);

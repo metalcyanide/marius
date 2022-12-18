@@ -14,6 +14,6 @@ int genRandTensorAndWriteToFile(torch::Tensor &rand_tensor, int total_embeddings
 
 bool checkPermOf2dTensor(torch::Tensor &a, torch::Tensor &b);
 
-void sortWithinEdgeBuckets(torch::Tensor &rand_tensor, vector<int64_t> &edge_bucket_sizes, int sort_dim = 0);
+void sortWithinEdgeBuckets(torch::Tensor &rand_tensor, vector<int32_t> &edge_bucket_sizes, int sort_dim = 0);
 
-vector<int64_t> partitionEdges(torch::Tensor &edges, int num_partitions, int num_nodes);
+vector<int32_t> partitionEdges(torch::Tensor &edges, int num_partitions, int num_nodes);

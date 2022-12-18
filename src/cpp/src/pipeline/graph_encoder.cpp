@@ -14,7 +14,7 @@ PipelineGraphEncoder::PipelineGraphEncoder(shared_ptr<DataLoader> dataloader, sh
     dataloader_ = dataloader;
 
     std::string item_name = "Nodes";
-    int64_t num_items = dataloader_->graph_storage_->getNumNodes();
+    int32_t num_items = dataloader_->graph_storage_->getNumNodes();
 
     progress_reporter_ = std::make_shared<ProgressReporter>(item_name, num_items, logs_per_epoch);
 
@@ -37,9 +37,9 @@ void PipelineGraphEncoder::encode(bool separate_layers) {
     timer.stop();
 
     std::string item_name = "Nodes";
-    int64_t num_items = dataloader_->graph_storage_->getNumNodes();
+    int32_t num_items = dataloader_->graph_storage_->getNumNodes();
 
-    int64_t epoch_time = timer.getDuration();
+    int32_t epoch_time = timer.getDuration();
     float items_per_second = (float)num_items / ((float)epoch_time / 1000);
     SPDLOG_INFO("Encode took: {}ms", epoch_time);
     SPDLOG_INFO("{} per Second: {}", item_name, items_per_second);
@@ -50,7 +50,7 @@ SynchronousGraphEncoder::SynchronousGraphEncoder(shared_ptr<DataLoader> dataload
     model_ = model;
 
     std::string item_name = "Nodes";
-    int64_t num_items = dataloader_->graph_storage_->getNumNodes();
+    int32_t num_items = dataloader_->graph_storage_->getNumNodes();
 
     progress_reporter_ = std::make_shared<ProgressReporter>(item_name, num_items, logs_per_epoch);
 }

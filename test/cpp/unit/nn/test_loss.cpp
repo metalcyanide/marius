@@ -16,11 +16,11 @@ torch::Tensor test_neg3 = torch::tensor({{-150.0, -100.0, -50.0, -25.0, 10.0}}, 
 torch::Tensor test_neg4 = torch::tensor({{.5, 10.0}, {2.5, -1.0}, {5.0, 1.0}, {7.5, -5.0}, {100.0, 20.0}, {250.0, 10.0}}, torch::kFloat32);
 
 torch::Tensor test_y_pred1 = torch::tensor({{.75, .25}, {.5, .5}, {3.0, .25}}, torch::kFloat32);
-torch::Tensor test_y_label1 = torch::tensor({0, 1, 0}, torch::kInt64);
+torch::Tensor test_y_label1 = torch::tensor({0, 1, 0}, torch::kInt32);
 // torch::Tensor test_y_label1 = torch::tensor({{.75, .25}, {.5, .5}, {.9, .1}}, torch::kFloat32);
 
 torch::Tensor test_y_pred2 = torch::tensor({{.75, .25, .1}, {.5, .5, .9}, {3.0, .25, 5.0}}, torch::kFloat32);
-torch::Tensor test_y_label2 = torch::tensor({0, 2, 2}, torch::kInt64);
+torch::Tensor test_y_label2 = torch::tensor({0, 2, 2}, torch::kInt32);
 // torch::Tensor test_y_label2 = torch::tensor({{.75, .20, .05}, {.2, .2, .6}, {.35, .05, .6}}, torch::kFloat32);
 
 torch::Tensor invalid_tensor = torch::tensor({{{0.0}}}, torch::kFloat32);
