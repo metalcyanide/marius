@@ -7,10 +7,6 @@
 #include "pipeline/queue.h"
 #include "reporting/logger.h"
 
-at::cuda::CUDAStream BatchToDeviceWorker::batchToDeviceCUDAStream = at::cuda::getStreamFromPool();
-at::cuda::CUDAStream ComputeWorkerGPU::computeCUDAStream = at::cuda::getStreamFromPool();
-at::cuda::CUDAStream BatchToHostWorker::deviceToBatchCUDAStream = at::cuda::getStreamFromPool();
-
 void BatchToDeviceWorker::run() {
     unsigned int rand_seed = rand();
 
@@ -28,7 +24,7 @@ void BatchToDeviceWorker::run() {
 
             {
                // set current stream to data stream (host to device).
-               at::cuda::CUDAStreamGuard guard(BatchToDeviceWorker::batchToDeviceCUDAStream);
+               at::cuda::CUDAStreamGuard guard(batchToDeviceCUDAStream);
                batch->to(pipeline_->model_->device_models_[queue_choice]->device_);
             }
 
@@ -74,7 +70,7 @@ void ComputeWorkerGPU::run() {
 
                 {
                     // set current stream to compute stream.
-                    at::cuda::CUDAStreamGuard guard(ComputeWorkerGPU::computeCUDAStream);
+                    at::cuda::CUDAStreamGuard guard(computeCUDAStream);
                     pipeline_->model_->device_models_[gpu_id_].get()->train_batch(batch, ((PipelineGPU *)pipeline_)->pipeline_options_->gpu_model_average);
                 }
 
@@ -146,7 +142,7 @@ void BatchToHostWorker::run() {
 
             {
                 // set current stream to data stream (device to host).
-                at::cuda::CUDAStreamGuard guard(BatchToHostWorker::deviceToBatchCUDAStream);
+                at::cuda::CUDAStreamGuard guard(deviceToBatchCUDAStream);
                 batch->embeddingsToHost();
             }
 
