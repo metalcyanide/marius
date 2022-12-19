@@ -11,9 +11,8 @@
 class BatchToDeviceWorker : public Worker {
    public:
     at::cuda::CUDAStream batchToDeviceCUDAStream;
-    BatchToDeviceWorker(Pipeline *pipeline) : Worker{pipeline} {
-        batchToDeviceCUDAStream = at::cuda::getStreamFromPool();
-    };
+    BatchToDeviceWorker(Pipeline *pipeline) : Worker{pipeline}, 
+        batchToDeviceCUDAStream{at::cuda::getStreamFromPool()}
 
     void run() override;
 };
@@ -23,9 +22,8 @@ class ComputeWorkerGPU : public Worker {
     int gpu_id_;
     at::cuda::CUDAStream computeCUDAStream;
 
-    ComputeWorkerGPU(Pipeline *pipeline, int gpu_id) : Worker{pipeline}, gpu_id_{gpu_id} {
-        computeCUDAStream = at::cuda::getStreamFromPool();
-    }
+    ComputeWorkerGPU(Pipeline *pipeline, int gpu_id) : Worker{pipeline}, gpu_id_{gpu_id}, 
+        computeCUDAStream{at::cuda::getStreamFromPool()}
 
     void run() override;
 };
@@ -44,9 +42,8 @@ class BatchToHostWorker : public Worker {
     int gpu_id_;
     at::cuda::CUDAStream deviceToBatchCUDAStream;
 
-    BatchToHostWorker(Pipeline *pipeline, int gpu_id) : Worker{pipeline}, gpu_id_{gpu_id} {
-        deviceToBatchCUDAStream = at::cuda::getStreamFromPool();
-    };
+    BatchToHostWorker(Pipeline *pipeline, int gpu_id) : Worker{pipeline}, gpu_id_{gpu_id}, 
+        deviceToBatchCUDAStream{at::cuda::getStreamFromPool()}
 
     void run() override;
 };
