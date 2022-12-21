@@ -132,12 +132,12 @@ shared_ptr<DatasetConfig> initDatasetConfig(pyobj python_config) {
     shared_ptr<DatasetConfig> ret_config = std::make_shared<DatasetConfig>();
 
     ret_config->dataset_dir = cast_helper<string>(python_config.attr("dataset_dir"));
-    ret_config->num_train = cast_helper<int64_t>(python_config.attr("num_train"));
-    ret_config->num_valid = cast_helper<int64_t>(python_config.attr("num_valid"));
-    ret_config->num_test = cast_helper<int64_t>(python_config.attr("num_test"));
-    ret_config->num_edges = cast_helper<int64_t>(python_config.attr("num_edges"));
-    ret_config->num_nodes = cast_helper<int64_t>(python_config.attr("num_nodes"));
-    ret_config->num_relations = cast_helper<int64_t>(python_config.attr("num_relations"));
+    ret_config->num_train = cast_helper<int32_t>(python_config.attr("num_train"));
+    ret_config->num_valid = cast_helper<int32_t>(python_config.attr("num_valid"));
+    ret_config->num_test = cast_helper<int32_t>(python_config.attr("num_test"));
+    ret_config->num_edges = cast_helper<int32_t>(python_config.attr("num_edges"));
+    ret_config->num_nodes = cast_helper<int32_t>(python_config.attr("num_nodes"));
+    ret_config->num_relations = cast_helper<int32_t>(python_config.attr("num_relations"));
     ret_config->node_feature_dim = cast_helper<int>(python_config.attr("node_feature_dim"));
     ret_config->rel_feature_dim = cast_helper<int>(python_config.attr("rel_feature_dim"));
     ret_config->num_classes = cast_helper<int>(python_config.attr("num_classes"));
@@ -416,7 +416,7 @@ shared_ptr<CheckpointConfig> initCheckpointConfig(pyobj python_config) {
 shared_ptr<ModelConfig> initModelConfig(pyobj python_config) {
     shared_ptr<ModelConfig> ret_config = std::make_shared<ModelConfig>();
 
-    ret_config->random_seed = cast_helper<int64_t>(python_config.attr("random_seed"));
+    ret_config->random_seed = cast_helper<int32_t>(python_config.attr("random_seed"));
     ret_config->learning_task = getLearningTask(cast_helper<std::string>(python_config.attr("learning_task")));
     ret_config->encoder = initEncoderConfig(python_config.attr("encoder"));
     ret_config->decoder = initDecoderConfig(python_config.attr("decoder"));

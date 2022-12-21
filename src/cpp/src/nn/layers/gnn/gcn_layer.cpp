@@ -64,7 +64,7 @@ torch::Tensor GCNLayer::forward(torch::Tensor inputs, DENSEGraph dense_graph, bo
         }
     }
 
-    int64_t layer_offset = dense_graph.getLayerOffset();
+    int32_t layer_offset = dense_graph.getLayerOffset();
     torch::Tensor self_embs = inputs.narrow(0, layer_offset, inputs.size(0) - layer_offset);
 
     a_i = a_i + self_embs / torch::sqrt((total_num_neighbors + 1)).unsqueeze(-1);

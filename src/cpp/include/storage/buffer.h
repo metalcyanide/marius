@@ -17,21 +17,21 @@ class Partition {
 
     bool present_; /**< If true this partition is present in the buffer */
 
-    int64_t partition_size_; /**< Number of embeddings in each partition, the last partition may have fewer embeddings than this */
+    int32_t partition_size_; /**< Number of embeddings in each partition, the last partition may have fewer embeddings than this */
     int embedding_size_;     /**< Number of elements in each embedding */
     torch::Dtype dtype_;     /**< Datatype of the embeddings */
     int dtype_size_;         /**< Size in bytes of the datatype */
-    int64_t total_size_;     /**< Total size in bytes of the partition */
+    int32_t total_size_;     /**< Total size in bytes of the partition */
 
-    int64_t idx_offset_;  /**< Embedding ID offset of the partition */
-    int64_t file_offset_; /**< Offset in bytes of the partition in the embedding file */
+    int32_t idx_offset_;  /**< Embedding ID offset of the partition */
+    int32_t file_offset_; /**< Offset in bytes of the partition in the embedding file */
     int buffer_idx_;      /**< Buffer entry ID of the partition in the buffer */
 
     torch::Tensor tensor_; /**< Tensor view of the partition */
 
     bool evicting_;
 
-    Partition(int partition_id, int64_t partition_size, int embedding_size, torch::Dtype dtype, int64_t idx_offset, int64_t file_offset);
+    Partition(int partition_id, int32_t partition_size, int embedding_size, torch::Dtype dtype, int32_t idx_offset, int32_t file_offset);
 
     ~Partition();
 
@@ -41,16 +41,16 @@ class Partition {
 class PartitionedFile {
    public:
     int num_partitions_;       /**< Number of partitions in the file */
-    int64_t partition_size_;   /**< Number of embeddings in each partition, the last partition may have fewer embeddings than this */
+    int32_t partition_size_;   /**< Number of embeddings in each partition, the last partition may have fewer embeddings than this */
     int embedding_size_;       /**< Number of elements in each embedding */
-    int64_t total_embeddings_; /**< Total number of embeddings */
+    int32_t total_embeddings_; /**< Total number of embeddings */
     torch::Dtype dtype_;       /**< Datatype of the embeddings */
     int dtype_size_;           /**< Size in bytes of embedding element dtype */
     string filename_;          /**< Name of the backing file */
     int fd_;                   /**< File descriptor for the backing file */
 
     /** Constructor */
-    PartitionedFile(string filename, int num_partitions, int64_t partition_size, int embedding_size, int64_t total_embeddings, torch::Dtype dtype);
+    PartitionedFile(string filename, int num_partitions, int32_t partition_size, int embedding_size, int32_t total_embeddings, torch::Dtype dtype);
 
     /** Loads a partition of the specified id into addr, assumes that addr has been allocated with sufficient memory */
     void readPartition(void *addr, Partition *partition);
@@ -68,14 +68,14 @@ class LookaheadBlock {
     void run();
 
    public:
-    int64_t total_size_;
+    int32_t total_size_;
     std::atomic<bool> present_;
     std::mutex *lock_;
     std::condition_variable cv_;
     std::vector<Partition *> partitions_;
     std::atomic<bool> done_;
 
-    LookaheadBlock(int64_t total_size, PartitionedFile *partitioned_file, int num_per_lookahead);
+    LookaheadBlock(int32_t total_size, PartitionedFile *partitioned_file, int num_per_lookahead);
 
     ~LookaheadBlock();
 
@@ -83,7 +83,7 @@ class LookaheadBlock {
 
     void stop();
 
-    void move_to_buffer(std::vector<void *> buff_addrs, std::vector<int64_t> buffer_idxs, std::vector<Partition *> next_partitions);
+    void move_to_buffer(std::vector<void *> buff_addrs, std::vector<int32_t> buffer_idxs, std::vector<Partition *> next_partitions);
 };
 
 class AsyncWriteBlock {
@@ -95,14 +95,14 @@ class AsyncWriteBlock {
     void run();
 
    public:
-    int64_t total_size_;
+    int32_t total_size_;
     std::atomic<bool> present_;
     std::mutex *lock_;
     std::condition_variable cv_;
     std::vector<Partition *> partitions_;
     std::atomic<bool> done_;
 
-    AsyncWriteBlock(int64_t total_size, PartitionedFile *partitioned_file, int num_per_evict);
+    AsyncWriteBlock(int32_t total_size, PartitionedFile *partitioned_file, int num_per_evict);
 
     ~AsyncWriteBlock();
 
@@ -115,13 +115,13 @@ class AsyncWriteBlock {
 
 class PartitionBuffer {
    private:
-    std::atomic<int64_t> size_;
+    std::atomic<int32_t> size_;
     int capacity_;
     int num_partitions_;     /**< Number of partitions in the file */
-    int64_t partition_size_; /**< Number of embeddings in each partition, the last partition may have fewer embeddings than this */
+    int32_t partition_size_; /**< Number of embeddings in each partition, the last partition may have fewer embeddings than this */
     int embedding_size_;     /**< Number of elements in each embedding */
     int fine_to_coarse_ratio_;
-    int64_t total_embeddings_;
+    int32_t total_embeddings_;
     torch::Dtype dtype_; /**< Datatype of the embeddings */
     int dtype_size_;
 
@@ -146,7 +146,7 @@ class PartitionBuffer {
 
     torch::Tensor getBufferState();
 
-    void admit(std::vector<Partition *> admit_partitions, std::vector<int64_t> buffer_idxs);
+    void admit(std::vector<Partition *> admit_partitions, std::vector<int32_t> buffer_idxs);
 
     void evict(std::vector<Partition *> evict_partitions);
 
@@ -155,7 +155,7 @@ class PartitionBuffer {
     void stopThreads();
 
    public:
-    PartitionBuffer(int capacity, int num_partitions, int fine_to_coarse_ratio, int64_t partition_size, int embedding_size, int64_t total_embeddings,
+    PartitionBuffer(int capacity, int num_partitions, int fine_to_coarse_ratio, int32_t partition_size, int embedding_size, int32_t total_embeddings,
                     torch::Dtype dtype, string filename, bool prefetching);
 
     ~PartitionBuffer();
@@ -170,7 +170,7 @@ class PartitionBuffer {
 
     std::vector<int> getNextEvict();
 
-    Indices getRandomIds(int64_t size);
+    Indices getRandomIds(int32_t size);
 
     torch::Tensor indexRead(torch::Tensor indices);
 
@@ -186,7 +186,7 @@ class PartitionBuffer {
 
     void sync();
 
-    int64_t getNumInMemory() { return buffer_tensor_view_.size(0); }
+    int32_t getNumInMemory() { return buffer_tensor_view_.size(0); }
 };
 
 #endif  // MARIUS_BUFFER_H

@@ -46,7 +46,7 @@ void PipelineEvaluator::evaluate(bool validation) {
     pipeline_->model_->reporter_->report();
     timer.stop();
 
-    int64_t epoch_time = timer.getDuration();
+    int32_t epoch_time = timer.getDuration();
     SPDLOG_INFO("Evaluation complete: {}ms", epoch_time);
 }
 

@@ -22,9 +22,9 @@ std::tuple<shared_ptr<Storage>, shared_ptr<Storage>, shared_ptr<Storage>> initia
     shared_ptr<Storage> valid_edge_storage = nullptr;
     shared_ptr<Storage> test_edge_storage = nullptr;
 
-    int64_t num_train = 0;
-    int64_t num_valid = 0;
-    int64_t num_test = 0;
+    int32_t num_train = 0;
+    int32_t num_valid = 0;
+    int32_t num_test = 0;
     if (learning_task == LearningTask::LINK_PREDICTION) {
         num_train = storage_config->dataset->num_train;
         num_valid = storage_config->dataset->num_valid;
@@ -144,7 +144,7 @@ std::tuple<shared_ptr<Storage>, shared_ptr<Storage>> initializeNodeEmbeddings(sh
         return std::forward_as_tuple(nullptr, nullptr);
     }
 
-    int64_t num_nodes = storage_config->dataset->num_nodes;
+    int32_t num_nodes = storage_config->dataset->num_nodes;
     int embedding_dim = model->get_base_embedding_dim();
     torch::Dtype dtype = storage_config->embeddings->options->dtype;
 
@@ -152,8 +152,8 @@ std::tuple<shared_ptr<Storage>, shared_ptr<Storage>> initializeNodeEmbeddings(sh
         shared_ptr<FlatFile> init_node_embeddings = std::make_shared<FlatFile>(node_embedding_filename, dtype);
         shared_ptr<FlatFile> init_optimizer_state_storage = std::make_shared<FlatFile>(optimizer_state_filename, dtype);
 
-        int64_t curr_num_nodes = 0;
-        int64_t offset = 0;
+        int32_t curr_num_nodes = 0;
+        int32_t offset = 0;
 
         while (offset < num_nodes) {
             if (num_nodes - offset < MAX_NODE_EMBEDDING_INIT_SIZE) {
@@ -215,9 +215,9 @@ std::tuple<shared_ptr<Storage>, shared_ptr<Storage>, shared_ptr<Storage>> initia
     string test_filename =
         storage_config->dataset->dataset_dir + PathConstants::nodes_directory + PathConstants::test + PathConstants::nodes_file + PathConstants::file_ext;
 
-    int64_t num_train = storage_config->dataset->num_train;
-    int64_t num_valid = storage_config->dataset->num_valid;
-    int64_t num_test = storage_config->dataset->num_test;
+    int32_t num_train = storage_config->dataset->num_train;
+    int32_t num_valid = storage_config->dataset->num_valid;
+    int32_t num_test = storage_config->dataset->num_test;
     torch::Dtype dtype = storage_config->nodes->options->dtype;
 
     shared_ptr<Storage> train_node_storage = nullptr;
@@ -278,8 +278,8 @@ std::tuple<shared_ptr<Storage>, shared_ptr<Storage>, shared_ptr<Storage>> initia
 shared_ptr<Storage> initializeRelationFeatures(shared_ptr<Model> model, shared_ptr<StorageConfig> storage_config) {
     string rel_features_file = storage_config->model_dir + PathConstants::features_file + PathConstants::file_ext;
 
-    int64_t num_relations = storage_config->dataset->num_relations;
-    int64_t rel_feature_dim = storage_config->dataset->rel_feature_dim;
+    int32_t num_relations = storage_config->dataset->num_relations;
+    int32_t rel_feature_dim = storage_config->dataset->rel_feature_dim;
 
     if (rel_feature_dim == -1 || num_relations == -1 || model->decoder_ == nullptr) {
         return nullptr;
@@ -297,8 +297,8 @@ shared_ptr<Storage> initializeNodeFeatures(shared_ptr<Model> model, shared_ptr<S
 
     shared_ptr<Storage> node_features;
 
-    int64_t num_nodes = storage_config->dataset->num_nodes;
-    int64_t node_feature_dim = storage_config->dataset->node_feature_dim;
+    int32_t num_nodes = storage_config->dataset->num_nodes;
+    int32_t node_feature_dim = storage_config->dataset->node_feature_dim;
 
     if (storage_config->features == nullptr || node_feature_dim == -1) {
         return nullptr;
@@ -333,8 +333,8 @@ shared_ptr<Storage> initializeNodeLabels(shared_ptr<Model> model, shared_ptr<Sto
 
     shared_ptr<Storage> node_labels;
 
-    int64_t num_nodes = storage_config->dataset->num_nodes;
-    int64_t num_classes = storage_config->dataset->num_classes;
+    int32_t num_nodes = storage_config->dataset->num_nodes;
+    int32_t num_classes = storage_config->dataset->num_classes;
     torch::Dtype dtype = torch::kInt32;
 
     switch (storage_config->nodes->type) {

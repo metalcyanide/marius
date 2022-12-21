@@ -34,11 +34,11 @@ void createDir(string path, bool exist_ok);
 /** Abstract storage class */
 class Storage {
    public:
-    int64_t dim0_size_;
-    int64_t dim1_size_;
+    int32_t dim0_size_;
+    int32_t dim1_size_;
     torch::Dtype dtype_;
     bool initialized_;
-    vector<int64_t> edge_bucket_sizes_;
+    vector<int32_t> edge_bucket_sizes_;
     torch::Tensor data_;
     torch::Device device_;
     string filename_;
@@ -51,11 +51,11 @@ class Storage {
 
     virtual void indexAdd(Indices indices, torch::Tensor values) = 0;
 
-    virtual torch::Tensor range(int64_t offset, int64_t n) = 0;
+    virtual torch::Tensor range(int32_t offset, int32_t n) = 0;
 
     virtual void indexPut(Indices indices, torch::Tensor values) = 0;
 
-    virtual void rangePut(int64_t offset, int64_t n, torch::Tensor values) = 0;
+    virtual void rangePut(int32_t offset, int32_t n, torch::Tensor values) = 0;
 
     virtual void load() = 0;
 
@@ -67,7 +67,7 @@ class Storage {
 
     virtual void sort(bool src) = 0;
 
-    int64_t getDim0() { return dim0_size_; }
+    int32_t getDim0() { return dim0_size_; }
 
     bool isInitialized() { return initialized_; }
 
@@ -76,13 +76,13 @@ class Storage {
     void readPartitionSizes(string filename) {
         std::ifstream partition_file(filename);
         edge_bucket_sizes_.clear();
-        int64_t size;
+        int32_t size;
         while (partition_file >> size) {
             edge_bucket_sizes_.push_back(size);
         }
     }
 
-    vector<int64_t> getEdgeBucketSizes() { return edge_bucket_sizes_; }
+    vector<int32_t> getEdgeBucketSizes() { return edge_bucket_sizes_; }
 };
 
 /** Storage which uses the partition buffer, used for node embeddings and optimizer state */
@@ -94,7 +94,7 @@ class PartitionBufferStorage : public Storage {
 
     shared_ptr<PartitionBufferOptions> options_;
 
-    PartitionBufferStorage(string filename, int64_t dim0_size, int64_t dim1_size, shared_ptr<PartitionBufferOptions> options);
+    PartitionBufferStorage(string filename, int32_t dim0_size, int32_t dim1_size, shared_ptr<PartitionBufferOptions> options);
 
     PartitionBufferStorage(string filename, torch::Tensor data, shared_ptr<PartitionBufferOptions> options);
 
@@ -102,7 +102,7 @@ class PartitionBufferStorage : public Storage {
 
     ~PartitionBufferStorage();
 
-    void rangePut(int64_t offset, torch::Tensor values);
+    void rangePut(int32_t offset, torch::Tensor values);
 
     void append(torch::Tensor values);
 
@@ -116,17 +116,17 @@ class PartitionBufferStorage : public Storage {
 
     void indexAdd(Indices indices, torch::Tensor values) override;
 
-    torch::Tensor range(int64_t offset, int64_t n) override;
+    torch::Tensor range(int32_t offset, int32_t n) override;
 
     void indexPut(Indices indices, torch::Tensor values) override;
 
-    void rangePut(int64_t offset, int64_t n, torch::Tensor values) override;
+    void rangePut(int32_t offset, int32_t n, torch::Tensor values) override;
 
     void shuffle() override;
 
     void sort(bool src) override;
 
-    Indices getRandomIds(int64_t size) { return buffer_->getRandomIds(size); }
+    Indices getRandomIds(int32_t size) { return buffer_->getRandomIds(size); }
 
     bool hasSwap() { return buffer_->hasSwap(); }
 
@@ -142,7 +142,7 @@ class PartitionBufferStorage : public Storage {
 
     std::vector<int> getNextEvict() { return buffer_->getNextEvict(); }
 
-    int64_t getNumInMemory() { return buffer_->getNumInMemory(); }
+    int32_t getNumInMemory() { return buffer_->getNumInMemory(); }
 };
 
 /** Flat File storage used for data that only requires sequential access. Can be used to store and access large amounts of edges. */
@@ -153,7 +153,7 @@ class FlatFile : public Storage {
     bool loaded_;
 
    public:
-    FlatFile(string filename, int64_t dim0_size, int64_t dim1_size, torch::Dtype dtype, bool alloc = false);
+    FlatFile(string filename, int32_t dim0_size, int32_t dim1_size, torch::Dtype dtype, bool alloc = false);
 
     FlatFile(string filename, torch::Tensor data);
 
@@ -161,7 +161,7 @@ class FlatFile : public Storage {
 
     ~FlatFile(){};
 
-    void rangePut(int64_t offset, torch::Tensor values);
+    void rangePut(int32_t offset, torch::Tensor values);
 
     void append(torch::Tensor values);
 
@@ -175,11 +175,11 @@ class FlatFile : public Storage {
 
     void indexAdd(Indices indices, torch::Tensor values) override;
 
-    torch::Tensor range(int64_t offset, int64_t n) override;
+    torch::Tensor range(int32_t offset, int32_t n) override;
 
     void indexPut(Indices indices, torch::Tensor values) override;
 
-    void rangePut(int64_t offset, int64_t n, torch::Tensor values) override;
+    void rangePut(int32_t offset, int32_t n, torch::Tensor values) override;
 
     void shuffle() override;
 
@@ -202,7 +202,7 @@ class InMemory : public Storage {
     bool loaded_;
 
    public:
-    InMemory(string filename, int64_t dim0_size, int64_t dim1_size, torch::Dtype dtype, torch::Device device);
+    InMemory(string filename, int32_t dim0_size, int32_t dim1_size, torch::Dtype dtype, torch::Device device);
 
     InMemory(string filename, torch::Tensor data, torch::Device device);
 
@@ -222,11 +222,11 @@ class InMemory : public Storage {
 
     void indexAdd(Indices indices, torch::Tensor values) override;
 
-    torch::Tensor range(int64_t offset, int64_t n) override;
+    torch::Tensor range(int32_t offset, int32_t n) override;
 
     void indexPut(Indices indices, torch::Tensor values) override;
 
-    void rangePut(int64_t offset, int64_t n, torch::Tensor values) override;
+    void rangePut(int32_t offset, int32_t n, torch::Tensor values) override;
 
     void shuffle() override;
 

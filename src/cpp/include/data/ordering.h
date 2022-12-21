@@ -28,14 +28,14 @@ std::tuple<vector<torch::Tensor>, vector<torch::Tensor>> getTwoLevelBetaOrdering
 std::tuple<vector<torch::Tensor>, vector<torch::Tensor>> getCustomEdgeBucketOrdering();
 
 std::tuple<vector<torch::Tensor>, vector<torch::Tensor>> getNodePartitionOrdering(NodePartitionOrdering node_partition_ordering, Indices train_nodes,
-                                                                                  int64_t total_num_nodes, int num_partitions, int buffer_capacity,
+                                                                                  int32_t total_num_nodes, int num_partitions, int buffer_capacity,
                                                                                   int fine_to_coarse_ratio, int num_cache_partitions);
 
-std::tuple<vector<torch::Tensor>, vector<torch::Tensor>> getDispersedNodePartitionOrdering(Indices train_nodes, int64_t total_num_nodes, int num_partitions,
+std::tuple<vector<torch::Tensor>, vector<torch::Tensor>> getDispersedNodePartitionOrdering(Indices train_nodes, int32_t total_num_nodes, int num_partitions,
                                                                                            int buffer_capacity, int fine_to_coarse_ratio,
                                                                                            int num_cache_partitions);
 
-std::tuple<vector<torch::Tensor>, vector<torch::Tensor>> getSequentialNodePartitionOrdering(Indices train_nodes, int64_t total_num_nodes, int num_partitions,
+std::tuple<vector<torch::Tensor>, vector<torch::Tensor>> getSequentialNodePartitionOrdering(Indices train_nodes, int32_t total_num_nodes, int num_partitions,
                                                                                             int buffer_capacity);
 
 std::tuple<vector<torch::Tensor>, vector<torch::Tensor>> getCustomNodePartitionOrdering();

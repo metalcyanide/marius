@@ -125,32 +125,24 @@ void DataLoader::nextEpoch() {
 //         torch::Tensor in_memory_edge_bucket_idx = torch::empty({edge_bucket_ids.size(0)}, edge_bucket_ids.options());
 //         torch::Tensor edge_bucket_sizes = torch::empty({edge_bucket_ids.size(0)}, edge_bucket_ids.options());
 
-//         auto edge_bucket_ids_accessor = edge_bucket_ids.accessor<int64_t, 1>();
-//         auto in_memory_edge_bucket_idx_accessor = in_memory_edge_bucket_idx.accessor<int64_t, 1>();
-//         auto edge_bucket_sizes_accessor = edge_bucket_sizes.accessor<int64_t, 1>();
+        auto edge_bucket_ids_accessor = edge_bucket_ids.accessor<int64_t, 1>();
+        auto in_memory_edge_bucket_idx_accessor = in_memory_edge_bucket_idx.accessor<int64_t, 1>();
+        auto edge_bucket_sizes_accessor = edge_bucket_sizes.accessor<int64_t, 1>();
 
-//         auto all_edge_bucket_sizes_accessor = graph_storage_->current_subgraph_state_->in_memory_edge_bucket_sizes_.accessor<int64_t, 1>();
-//         auto all_edge_bucket_starts_accessor = graph_storage_->current_subgraph_state_->in_memory_edge_bucket_starts_.accessor<int64_t, 1>();
+        auto all_edge_bucket_sizes_accessor = graph_storage_->current_subgraph_state_->in_memory_edge_bucket_sizes_.accessor<int64_t, 1>();
+        auto all_edge_bucket_starts_accessor = graph_storage_->current_subgraph_state_->in_memory_edge_bucket_starts_.accessor<int64_t, 1>();
 
-//         auto tup = torch::sort(graph_storage_->current_subgraph_state_->in_memory_edge_bucket_ids_);
-//         torch::Tensor sorted_in_memory_ids = std::get<0>(tup);
-//         torch::Tensor in_memory_id_indices = std::get<1>(tup);
-//         auto in_memory_id_indices_accessor = in_memory_id_indices.accessor<int64_t, 1>();
+        auto tup = torch::sort(graph_storage_->current_subgraph_state_->in_memory_edge_bucket_ids_);
+        torch::Tensor sorted_in_memory_ids = std::get<0>(tup);
+        torch::Tensor in_memory_id_indices = std::get<1>(tup);
+        auto in_memory_id_indices_accessor = in_memory_id_indices.accessor<int32_t, 1>();
 
-// #pragma omp parallel for
-//         for (int i = 0; i < in_memory_edge_bucket_idx.size(0); i++) {
-//             int64_t edge_bucket_id = edge_bucket_ids_accessor[i];
-//             int64_t idx = torch::searchsorted(sorted_in_memory_ids, edge_bucket_id).item<int64_t>();
-//             idx = in_memory_id_indices_accessor[idx];
-//             int64_t edge_bucket_size = all_edge_bucket_sizes_accessor[idx];
-
-//             in_memory_edge_bucket_idx_accessor[i] = idx;
-//             edge_bucket_sizes_accessor[i] = edge_bucket_size;
-//         }
-
-//         torch::Tensor local_offsets = edge_bucket_sizes.cumsum(0);
-//         int64_t total_size = local_offsets[-1].item<int64_t>();
-//         local_offsets = local_offsets - edge_bucket_sizes;
+#pragma omp parallel for
+        for (int i = 0; i < in_memory_edge_bucket_idx.size(0); i++) {
+            int64_t edge_bucket_id = edge_bucket_ids_accessor[i];
+            int64_t idx = torch::searchsorted(sorted_in_memory_ids, edge_bucket_id).item<int64_t>();
+            idx = in_memory_id_indices_accessor[idx];
+            int64_t edge_bucket_size = all_edge_bucket_sizes_accessor[idx];
 
 //         auto local_offsets_accessor = local_offsets.accessor<int64_t, 1>();
 
@@ -164,13 +156,15 @@ void DataLoader::nextEpoch() {
 //             int64_t edge_bucket_start = all_edge_bucket_starts_accessor[idx];
 //             int64_t local_offset = local_offsets_accessor[i];
 
-//             active_edges.narrow(0, local_offset, edge_bucket_size) =
-//                 graph_storage_->current_subgraph_state_->all_in_memory_mapped_edges_.narrow(0, edge_bucket_start, edge_bucket_size);
-//         }
+        active_edges = torch::empty({total_size, graph_storage_->storage_ptrs_.edges->dim1_size_},
+                                    graph_storage_->current_subgraph_state_->all_in_memory_mapped_edges_.options());
 
-//     } else {
-//         active_edges = graph_storage_->storage_ptrs_.edges->range(0, graph_storage_->storage_ptrs_.edges->getDim0());
-//     }
+#pragma omp parallel for
+        for (int i = 0; i < in_memory_edge_bucket_idx.size(0); i++) {
+            int64_t idx = in_memory_edge_bucket_idx_accessor[i];
+            int64_t edge_bucket_size = edge_bucket_sizes_accessor[i];
+            int64_t edge_bucket_start = all_edge_bucket_starts_accessor[idx];
+            int64_t local_offset = local_offsets_accessor[i];
 
 //     auto opts = torch::TensorOptions().dtype(torch::kInt64).device(active_edges.device());
 //     active_edges = (active_edges.index_select(0, torch::randperm(active_edges.size(0), opts)));
@@ -200,13 +194,13 @@ void DataLoader::setActiveNodes() {
 }
 
 void DataLoader::initializeBatches(bool prepare_encode) {
-    int64_t batch_id = 0;
-    int64_t start_idx = 0;
+    int32_t batch_id = 0;
+    int32_t start_idx = 0;
 
     clearBatches();
 
     all_read_ = false;
-    int64_t num_items;
+    int32_t num_items;
 
     if (prepare_encode) {
         num_items = graph_storage_->getNumNodes();
@@ -220,7 +214,7 @@ void DataLoader::initializeBatches(bool prepare_encode) {
         }
     }
 
-    int64_t batch_size = batch_size_;
+    int32_t batch_size = batch_size_;
     vector<shared_ptr<Batch>> batches;
     while (start_idx < num_items) {
         if (num_items - (start_idx + batch_size) < 0) {
@@ -271,7 +265,7 @@ void DataLoader::setBufferOrdering() {
     } else {
         if (graph_storage_->useInMemorySubGraph()) {
             graph_storage_->storage_ptrs_.train_nodes->load();
-            int64_t num_train_nodes = graph_storage_->storage_ptrs_.nodes->getDim0();
+            int32_t num_train_nodes = graph_storage_->storage_ptrs_.nodes->getDim0();
             auto tup = getNodePartitionOrdering(
                 options->node_partition_ordering, graph_storage_->storage_ptrs_.train_nodes->range(0, num_train_nodes).flatten(0, 1),
                 graph_storage_->getNumNodes(), options->num_partitions, options->buffer_capacity, options->fine_to_coarse_ratio, options->num_cache_partitions);
@@ -428,7 +422,7 @@ void DataLoader::edgeSample(shared_ptr<Batch> batch) {
 
         mapped_tensors = apply_tensor_map(sorted_map, all_ids);
 
-        int64_t num_nbrs_sampled = batch->dense_graph_.hop_offsets_[-2].item<int64_t>();
+        int32_t num_nbrs_sampled = batch->dense_graph_.hop_offsets_[-2].item<int32_t>();
 
         src_mapping = map_to_unsorted.index_select(0, mapped_tensors[0]) - num_nbrs_sampled;
         dst_mapping = map_to_unsorted.index_select(0, mapped_tensors[1]) - num_nbrs_sampled;

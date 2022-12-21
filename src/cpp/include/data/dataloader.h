@@ -23,8 +23,8 @@ class DataLoader {
    public:
     bool train_;
     int epochs_processed_;
-    int64_t batches_processed_;
-    int64_t current_edge_;
+    int32_t batches_processed_;
+    int32_t current_edge_;
     std::mutex *sampler_lock_;
     vector<shared_ptr<Batch>> batches_;
     int batch_size_;
@@ -175,11 +175,11 @@ class DataLoader {
      * Gets the number of edges from the graph storage.
      * @return Number of edges in the graph
      */
-    int64_t getNumEdges() { return graph_storage_->getNumEdges(); }
+    int32_t getNumEdges() { return graph_storage_->getNumEdges(); }
 
-    int64_t getEpochsProcessed() { return epochs_processed_; }
+    int32_t getEpochsProcessed() { return epochs_processed_; }
 
-    int64_t getBatchesProcessed() { return batches_processed_; }
+    int32_t getBatchesProcessed() { return batches_processed_; }
 
     bool isTrain() { return train_; }
 

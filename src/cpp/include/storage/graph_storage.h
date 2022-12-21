@@ -45,8 +45,8 @@ class GraphModelStorage {
 
     void _unload(shared_ptr<Storage> storage, bool write);
 
-    int64_t num_nodes_;
-    int64_t num_edges_;
+    int32_t num_nodes_;
+    int32_t num_edges_;
 
    protected:
     bool train_;
@@ -98,29 +98,29 @@ class GraphModelStorage {
 
     EdgeList getEdges(Indices indices);
 
-    EdgeList getEdgesRange(int64_t start, int64_t size);
+    EdgeList getEdgesRange(int32_t start, int32_t size);
 
-    Indices getRandomNodeIds(int64_t size);
+    Indices getRandomNodeIds(int32_t size);
 
-    Indices getNodeIdsRange(int64_t start, int64_t size);
+    Indices getNodeIdsRange(int32_t start, int32_t size);
 
     void shuffleEdges();
 
     torch::Tensor getNodeEmbeddings(Indices indices);
 
-    torch::Tensor getNodeEmbeddingsRange(int64_t start, int64_t size);
+    torch::Tensor getNodeEmbeddingsRange(int32_t start, int32_t size);
 
     torch::Tensor getNodeFeatures(Indices indices);
 
-    torch::Tensor getNodeFeaturesRange(int64_t start, int64_t size);
+    torch::Tensor getNodeFeaturesRange(int32_t start, int32_t size);
 
     torch::Tensor getEncodedNodes(Indices indices);
 
-    torch::Tensor getEncodedNodesRange(int64_t start, int64_t size);
+    torch::Tensor getEncodedNodesRange(int32_t start, int32_t size);
 
     torch::Tensor getNodeLabels(Indices indices);
 
-    torch::Tensor getNodeLabelsRange(int64_t start, int64_t size);
+    torch::Tensor getNodeLabelsRange(int32_t start, int32_t size);
 
     void updatePutNodeEmbeddings(Indices indices, torch::Tensor values);
 
@@ -128,11 +128,11 @@ class GraphModelStorage {
 
     void updatePutEncodedNodes(Indices indices, torch::Tensor values);
 
-    void updatePutEncodedNodesRange(int64_t start, int64_t size, torch::Tensor values);
+    void updatePutEncodedNodesRange(int32_t start, int32_t size, torch::Tensor values);
 
     OptimizerState getNodeEmbeddingState(Indices indices);
 
-    OptimizerState getNodeEmbeddingStateRange(int64_t start, int64_t size);
+    OptimizerState getNodeEmbeddingStateRange(int32_t start, int32_t size);
 
     void updatePutNodeEmbeddingState(Indices indices, OptimizerState state);
 
@@ -228,7 +228,7 @@ class GraphModelStorage {
 
     void setActiveNodes(torch::Tensor node_ids) { active_nodes_ = node_ids; }
 
-    int64_t getNumActiveEdges() {
+    int32_t getNumActiveEdges() {
         if (active_edges_.defined()) {
             return active_edges_.size(0);
         } else {
@@ -236,7 +236,7 @@ class GraphModelStorage {
         }
     }
 
-    int64_t getNumActiveNodes() {
+    int32_t getNumActiveNodes() {
         if (active_nodes_.defined()) {
             return active_nodes_.size(0);
         } else {
@@ -244,9 +244,9 @@ class GraphModelStorage {
         }
     }
 
-    int64_t getNumEdges() { return storage_ptrs_.edges->getDim0(); }
+    int32_t getNumEdges() { return storage_ptrs_.edges->getDim0(); }
 
-    int64_t getNumNodes() {
+    int32_t getNumNodes() {
         if (storage_ptrs_.node_embeddings != nullptr) {
             return storage_ptrs_.node_embeddings->getDim0();
         }
@@ -258,7 +258,7 @@ class GraphModelStorage {
         return num_nodes_;
     }
 
-    int64_t getNumNodesInMemory() {
+    int32_t getNumNodesInMemory() {
         if (storage_ptrs_.node_embeddings != nullptr) {
             if (useInMemorySubGraph()) {
                 return std::dynamic_pointer_cast<PartitionBufferStorage>(storage_ptrs_.node_embeddings)->getNumInMemory();

@@ -32,7 +32,7 @@ enum class BatchStatus {
 class Batch {
    public:
     int batch_id_;      /**< ID of the batch */
-    int64_t start_idx_; /**< Offset in the edges storage */
+    int32_t start_idx_; /**< Offset in the edges storage */
     int batch_size_;    /**< Number of edges in the batch */
     bool train_;        /**< If true, this batch is a training batch and requires gradient tracking */
     int device_id_;     /**< ID of the device the batch is assigned to */

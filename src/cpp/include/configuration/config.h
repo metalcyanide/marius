@@ -70,12 +70,12 @@ struct StorageBackendConfig {
 
 struct DatasetConfig {
     string dataset_dir;
-    int64_t num_edges;
-    int64_t num_nodes;
-    int64_t num_relations;
-    int64_t num_train;
-    int64_t num_valid;
-    int64_t num_test;
+    int32_t num_edges;
+    int32_t num_nodes;
+    int32_t num_relations;
+    int32_t num_train;
+    int32_t num_valid;
+    int32_t num_test;
     int node_feature_dim;
     int rel_feature_dim;
     int num_classes;

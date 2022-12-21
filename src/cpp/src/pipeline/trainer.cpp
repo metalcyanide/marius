@@ -14,7 +14,7 @@ PipelineTrainer::PipelineTrainer(shared_ptr<DataLoader> dataloader, shared_ptr<M
     learning_task_ = dataloader_->learning_task_;
 
     std::string item_name;
-    int64_t num_items = 0;
+    int32_t num_items = 0;
     if (learning_task_ == LearningTask::LINK_PREDICTION) {
         item_name = "Edges";
         num_items = dataloader_->graph_storage_->storage_ptrs_.train_edges->getDim0();
@@ -57,7 +57,7 @@ void PipelineTrainer::train(int num_epochs) {
         timer.stop();
 
         std::string item_name;
-        int64_t num_items = 0;
+        int32_t num_items = 0;
         if (learning_task_ == LearningTask::LINK_PREDICTION) {
             item_name = "Edges";
             num_items = dataloader_->graph_storage_->storage_ptrs_.train_edges->getDim0();
@@ -66,7 +66,7 @@ void PipelineTrainer::train(int num_epochs) {
             num_items = dataloader_->graph_storage_->storage_ptrs_.train_nodes->getDim0();
         }
 
-        int64_t epoch_time = timer.getDuration();
+        int32_t epoch_time = timer.getDuration();
         float items_per_second = (float)num_items / ((float)epoch_time / 1000);
         SPDLOG_INFO("Epoch Runtime: {}ms", epoch_time);
         SPDLOG_INFO("{} per Second: {}", item_name, items_per_second);
@@ -79,7 +79,7 @@ SynchronousTrainer::SynchronousTrainer(shared_ptr<DataLoader> dataloader, shared
     learning_task_ = dataloader_->learning_task_;
 
     std::string item_name;
-    int64_t num_items = 0;
+    int32_t num_items = 0;
     if (learning_task_ == LearningTask::LINK_PREDICTION) {
         item_name = "Edges";
         num_items = dataloader_->graph_storage_->storage_ptrs_.train_edges->getDim0();
@@ -150,7 +150,7 @@ void SynchronousTrainer::train(int num_epochs) {
         timer.stop();
 
         std::string item_name;
-        int64_t num_items = 0;
+        int32_t num_items = 0;
         if (learning_task_ == LearningTask::LINK_PREDICTION) {
             item_name = "Edges";
             num_items = dataloader_->graph_storage_->storage_ptrs_.train_edges->getDim0();
@@ -159,7 +159,7 @@ void SynchronousTrainer::train(int num_epochs) {
             num_items = dataloader_->graph_storage_->storage_ptrs_.train_nodes->getDim0();
         }
 
-        int64_t epoch_time = timer.getDuration();
+        int32_t epoch_time = timer.getDuration();
         float items_per_second = (float)num_items / ((float)epoch_time / 1000);
         SPDLOG_INFO("Epoch Runtime: {}ms", epoch_time);
         SPDLOG_INFO("{} per Second: {}", item_name, items_per_second);

@@ -123,20 +123,20 @@ class NodeClassificationReporter : public Reporter {
 
 class ProgressReporter : public Reporter {
     std::string item_name_;
-    int64_t total_items_;
-    int64_t current_item_;
+    int32_t total_items_;
+    int32_t current_item_;
     int total_reports_;
-    int64_t next_report_;
-    int64_t items_per_report_;
+    int32_t next_report_;
+    int32_t items_per_report_;
 
    public:
-    ProgressReporter(std::string item_name, int64_t total_items, int total_reports);
+    ProgressReporter(std::string item_name, int32_t total_items, int total_reports);
 
     ~ProgressReporter();
 
     void clear();
 
-    void addResult(int64_t items_processed);
+    void addResult(int32_t items_processed);
 
     void report() override;
 };
